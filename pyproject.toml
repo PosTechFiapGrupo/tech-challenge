@@ -1,0 +1,31 @@
+[project]
+name = "tech-challenge"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Andressa Silva",email = "andressa.workti@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi (>=0.116.1,<0.117.0)",
+    "uvicorn (>=0.35.0,<0.36.0)",
+    "sqlalchemy (>=2.0.41,<3.0.0)",
+    "aiomysql (>=0.2.0,<0.3.0)",
+    "alembic (>=1.16.4,<2.0.0)",
+    "dependency-injector (>=4.48.1,<5.0.0)",
+    "pydantic (>=2.11.7,<3.0.0)",
+    "pymysql (>=1.1.1,<2.0.0)",
+    "cryptography (>=45.0.5,<46.0.0)",
+    "httpx (>=0.28.1,<0.29.0)"
+]
+
+[tool.poetry]
+packages = [
+    {include = "app"},
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
