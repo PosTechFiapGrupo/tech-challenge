@@ -8,6 +8,7 @@ class ProductCreatedQueueEvent(ProductCreatedEvent):
         # TODO: Your code here
         return True
 
+
 class ProductUpdatedQueueEvent(ProductUpdatedEvent):
 
     def send(self, product: ProductEntity):

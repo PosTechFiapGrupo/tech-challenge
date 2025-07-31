@@ -6,44 +6,54 @@ from app.infrastructure.container import Container
 from app.application.services.product import ProductService
 from app.infrastructure.schemas.product import ProductOutput, ProductInput
 
-router = APIRouter(
-    prefix='/products',
-    tags=['products']
-)
+router = APIRouter(prefix="/products", tags=["products"])
 
-@router.get('/', response_model=List[ProductOutput])
+
+@router.get("/", response_model=List[ProductOutput])
 @inject
-async def get_catalog(product_services: ProductService = Depends(Provide[Container.product_services])) -> List[dict]:
+async def get_catalog(
+    product_services: ProductService = Depends(Provide[Container.product_services]),
+) -> List[dict]:
     response: List[ProductEntity] = await product_services.products_catalog()
     return [product_entity.__dict__ for product_entity in response]
 
-@router.get('/{id}', response_model=ProductOutput)
+
+@router.get("/{id}", response_model=ProductOutput)
 @inject
-async def get_description(id: str, product_services: ProductService = Depends(Provide[Container.product_services])) -> dict:
+async def get_description(
+    id: str,
+    product_services: ProductService = Depends(Provide[Container.product_services]),
+) -> dict:
     response: ProductEntity = await product_services.product_detail(id)
     return response.__dict__
 
-@router.post('/', response_model=ProductOutput)
+
+@router.post("/", response_model=ProductOutput)
 @inject
 async def register_product(
-        product: ProductInput,
-        product_factory: ProductEntityFactory = Depends(Provide[Container.product_factory]),
-        product_services: ProductService = Depends(Provide[Container.product_services])
+    product: ProductInput,
+    product_factory: ProductEntityFactory = Depends(Provide[Container.product_factory]),
+    product_services: ProductService = Depends(Provide[Container.product_services]),
 ) -> dict:
     name, description, price, stock, image = product.__dict__.values()
-    product_entity: ProductEntity = product_factory.create(None, name, description, price, stock, image)
+    product_entity: ProductEntity = product_factory.create(
+        None, name, description, price, stock, image
+    )
     response: ProductEntity = await product_services.register_product(product_entity)
     return response.__dict__
 
-@router.put('/{id}', response_model=ProductOutput)
+
+@router.put("/{id}", response_model=ProductOutput)
 @inject
 async def update_product(
-        id: str,
-        product: ProductInput,
-        product_factory: ProductEntityFactory = Depends(Provide[Container.product_factory]),
-        product_services: ProductService = Depends(Provide[Container.product_services])
+    id: str,
+    product: ProductInput,
+    product_factory: ProductEntityFactory = Depends(Provide[Container.product_factory]),
+    product_services: ProductService = Depends(Provide[Container.product_services]),
 ) -> dict:
     name, description, price, stock, image = product.__dict__.values()
-    product_entity: ProductEntity = product_factory.create(id, name, description, price, stock, image)
+    product_entity: ProductEntity = product_factory.create(
+        id, name, description, price, stock, image
+    )
     response: ProductEntity = await product_services.update_product(product_entity)
     return response.__dict__

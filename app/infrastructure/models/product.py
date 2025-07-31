@@ -16,10 +16,10 @@ class ProductModel(Base):
 
     def to_dict(self) -> dict:
         return {
-            'id': self.id,
-            'name': self.name,
-            'description': self.description,
-            'price': self.price,
-            'stock': self.stock,
-            'image': self.image
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "price": self.price,
+            "stock": self.stock,
+            "image": self.image,
         }

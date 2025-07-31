@@ -8,13 +8,17 @@ from app.domain.repositories.product import ProductRepository
 
 class ProductService(ProductUseCases):
 
-    __media_url = 'https://devlusaja.com/{}'
+    __media_url = "https://devlusaja.com/{}"
 
-    def __init__(self, product_repository: ProductRepository,
-                 product_created_event: ProductCreatedEvent,
-                 product_updated_event: ProductUpdatedEvent
-                 ):
-        super().__init__(product_repository, product_created_event, product_updated_event)
+    def __init__(
+        self,
+        product_repository: ProductRepository,
+        product_created_event: ProductCreatedEvent,
+        product_updated_event: ProductUpdatedEvent,
+    ):
+        super().__init__(
+            product_repository, product_created_event, product_updated_event
+        )
 
     async def products_catalog(self) -> List[ProductEntity]:
         products = await self.product_repository.get_all()
