@@ -17,12 +17,13 @@ help:
 	@echo "  make migrate-up       - Aplicar migrations"
 	@echo "  make migrate-down     - Reverter última migration"
 	@echo "  make migrate-create MSG=<message> - Criar nova migration"
-	@echo "  make build            - Construir imagens Docker"
-	@echo "  make dev              - Executar app em modo desenvolvimento"
-	@echo "  make clean            - Parar e remover containers, volumes e redes"
-	@echo "  make status           - Status dos containers"
-	@echo "  make shell            - Entrar no container da aplicação"
-	@echo "  make install          - Instalar dependências no container"
+	@echo "  make build        - Construir imagens Docker"
+	@echo "  make install      - Instalar dependências"
+	@echo "  make install-dev  - Instalar dependências de desenvolvimento"
+	@echo "  make format       - Formatar código com Black"
+	@echo "  make format-check - Verificar formatação sem alterar arquivos"
+	@echo "  make lint         - Executar linting com flake8"
+	@echo "  make check-all    - Executar formatação, lint e testes"
 
 # Iniciar aplicação
 up:
@@ -75,6 +76,27 @@ shell:
 # Instalar dependências
 install:
 	$(DOCKER_COMPOSE) exec app pip install -r requirements.txt
+
+# Instalar dependências de desenvolvimento
+install-dev:
+	$(DOCKER_COMPOSE) exec app pip install -r requirements.txt
+	$(DOCKER_COMPOSE) exec app pip install black flake8 pytest pytest-asyncio
+
+# Formatar código com Black
+format:
+	$(DOCKER_COMPOSE) exec app black app/
+
+# Verificar formatação sem alterar arquivos
+format-check:
+	$(DOCKER_COMPOSE) exec app black app/ --check --diff
+
+# Executar linting com flake8
+lint:
+	$(DOCKER_COMPOSE)exec app flake8 app/
+
+# Executar formatação, lint e testes
+check-all: format lint test
+	@echo "✅ Formatação, linting e testes concluídos!"
 
 # Ver qual comando docker-compose está sendo usado
 print-docker-compose:

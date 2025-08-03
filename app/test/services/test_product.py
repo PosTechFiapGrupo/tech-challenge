@@ -7,10 +7,10 @@ from app.test.data.product import expected_product_description
 
 
 class TestProductService:
-
     """
     this fixture fulfills the function of dependency injection for all tests
     """
+
     @pytest.fixture(autouse=True)
     def injector(self):
         container = Container()
@@ -24,22 +24,30 @@ class TestProductService:
             assert type(product) is ProductEntity
 
     def test_that_product_detail_is_an_entity(self):
-        product = self.product_service.product_detail('mock_id')
+        product = self.product_service.product_detail("mock_id")
         assert type(product) is ProductEntity
 
     def test_product_name_is_correct(self):
-        product = self.product_service.product_detail('mock_id')
-        assert product.name == expected_product_description['name']
+        product = self.product_service.product_detail("mock_id")
+        assert product.name == expected_product_description["name"]
 
     def test_register_product(self):
-        uid, name, description, price, stock, image = expected_product_description.values()
-        product_entity = self.product_factory.create(None, name, description, float(price), int(stock), image)
+        uid, name, description, price, stock, image = (
+            expected_product_description.values()
+        )
+        product_entity = self.product_factory.create(
+            None, name, description, float(price), int(stock), image
+        )
         product = self.product_service.register_product(product_entity)
         assert type(product) is ProductEntity
         assert product.id == uid
 
     def test_update_product(self):
-        uid, name, description, price, stock, image = expected_product_description.values()
-        product_entity = self.product_factory.create(uid, name, description, price, stock, image)
+        uid, name, description, price, stock, image = (
+            expected_product_description.values()
+        )
+        product_entity = self.product_factory.create(
+            uid, name, description, price, stock, image
+        )
         product = self.product_service.update_product(product_entity)
         assert type(product) is ProductEntity

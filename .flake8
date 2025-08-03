@@ -1,0 +1,17 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E203, W503, E501
+exclude = 
+    .git,
+    __pycache__,
+    build,
+    dist,
+    migrations,
+    .venv,
+    venv,
+    *.egg-info,
+    .pytest_cache
+per-file-ignores =
+    # imported but unused
+    __init__.py:F401
+max-complexity = 10
