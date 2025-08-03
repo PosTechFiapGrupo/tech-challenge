@@ -1,48 +1,48 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.infrastructure.database import database
-from app.infrastructure.repositories.inventory_item_repository_impl import InventoryItemRepositoryImpl
+from fastapi import APIRouter, Depends
+from typing import List
+from dependency_injector.wiring import inject, Provide
+from app.infrastructure.container import Container
+from app.infrastructure.schemas.inventory_item_schema import InventoryItemCreate, InventoryItemOut, InventoryItemUpdate
 from app.domain.use_cases.inventory_item_use_case import InventoryItemUseCase
-from app.domain.entities.inventory_item import InventoryItem
-from app.infrastructure.schemas.inventory_item_schema import (
-    InventoryItemCreate, InventoryItemUpdate, InventoryItemResponse
-)
 
-router = APIRouter(prefix="/inventory_items", tags=["inventory_items"])
+router = APIRouter(prefix="/inventory", tags=["Inventory Items"])
 
-# Async generator para injetar a sessão async no FastAPI
-async def get_db_session() -> AsyncSession:
-    async for session in database.get_session():
-        yield session
+@router.get("/", response_model=List[InventoryItemOut])
+@inject
+async def list_items(
+    use_case: InventoryItemUseCase = Depends(Provide[Container.inventory_item_use_case])
+):
+    return await use_case.list_items()
 
-def get_use_case(db: AsyncSession = Depends(get_db_session)) -> InventoryItemUseCase:
-    repo = InventoryItemRepositoryImpl(db)
-    return InventoryItemUseCase(repo)
+@router.get("/{item_id}", response_model=InventoryItemOut)
+@inject
+async def get_item(
+    item_id: int,
+    use_case: InventoryItemUseCase = Depends(Provide[Container.inventory_item_use_case])
+):
+    return await use_case.get_item(item_id)
 
-@router.post("/", response_model=InventoryItemResponse)
-async def create_item(data: InventoryItemCreate, use_case: InventoryItemUseCase = Depends(get_use_case)):
-    item = InventoryItem(id=0, **data.dict())
-    return await use_case.create(item)
+@router.post("/", response_model=InventoryItemOut, status_code=201)
+@inject
+async def create_item(
+    item: InventoryItemCreate,
+    use_case: InventoryItemUseCase = Depends(Provide[Container.inventory_item_use_case])
+):
+    return await use_case.create_item(item)
 
-@router.get("/", response_model=list[InventoryItemResponse])
-async def list_items(use_case: InventoryItemUseCase = Depends(get_use_case)):
-    return await use_case.list_all()
-
-@router.get("/{item_id}", response_model=InventoryItemResponse)
-async def get_item(item_id: int, use_case: InventoryItemUseCase = Depends(get_use_case)):
-    item = await use_case.get(item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return item
-
-@router.put("/{item_id}", response_model=InventoryItemResponse)
-async def update_item(item_id: int, data: InventoryItemUpdate, use_case: InventoryItemUseCase = Depends(get_use_case)):
-    item = InventoryItem(id=item_id, **data.dict())
-    result = await use_case.update(item)
-    if not result:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return result
+@router.put("/{item_id}", response_model=InventoryItemOut)
+@inject
+async def update_item(
+    item_id: int,
+    item: InventoryItemUpdate,
+    use_case: InventoryItemUseCase = Depends(Provide[Container.inventory_item_use_case])
+):
+    return await use_case.update_item(item_id, item)
 
 @router.delete("/{item_id}", status_code=204)
-async def delete_item(item_id: int, use_case: InventoryItemUseCase = Depends(get_use_case)):
-    await use_case.delete(item_id)
+@inject
+async def delete_item(
+    item_id: int,
+    use_case: InventoryItemUseCase = Depends(Provide[Container.inventory_item_use_case])
+):
+    await use_case.delete_item(item_id)

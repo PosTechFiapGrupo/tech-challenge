@@ -1,18 +1,17 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-class InventoryItemBase(BaseModel):
-    name: str
-    description: str
-    quantity: int
+class InventoryItemCreate(BaseModel):
+    name: str = Field(..., example="Óleo de motor")
+    description: str = Field(..., example="Lubrificante 5W30")
+    quantity: int = Field(..., example=10)
+    minimum_stock: int = Field(..., example=3)
+    unit_price: float = Field(..., example=89.90)
 
-    model_config = {
-        "from_attributes": True
-    }
-class InventoryItemCreate(InventoryItemBase):
+class InventoryItemUpdate(InventoryItemCreate):
     pass
 
-class InventoryItemUpdate(InventoryItemBase):
-    pass
-
-class InventoryItemResponse(InventoryItemBase):
+class InventoryItemOut(InventoryItemCreate):
     id: int
+
+    class Config:
+        from_attributes = True

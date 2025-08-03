@@ -1,51 +1,56 @@
-from typing import Optional, List
-from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.domain.entities.inventory_item import InventoryItem
+from sqlalchemy.future import select
+from app.domain.entities.inventory_item_entity import InventoryItem
+from app.domain.repositories.inventory_item_repository import InventoryItemRepository
 from app.infrastructure.models.inventory_item_model import InventoryItemModel
 
-class InventoryItemRepositoryImpl:
+class InventoryItemRepositoryImpl(InventoryItemRepository):
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_by_id(self, item_id: int) -> Optional[InventoryItem]:
-        query = await self.db.execute(
-            select(InventoryItemModel).filter_by(id=item_id)
+    async def list_all(self):
+        result = await self.db.execute(select(InventoryItemModel))
+        return [self._to_entity(row) for row in result.scalars().all()]
+
+    async def get_by_id(self, item_id: int):
+        result = await self.db.get(InventoryItemModel, item_id)
+        return self._to_entity(result)
+
+    async def create(self, item: InventoryItem):
+        db_item = InventoryItemModel(
+            name=item.name,
+            description=item.description,
+            quantity=item.quantity,
+            minimum_stock=item.minimum_stock,
+            unit_price=item.unit_price,
         )
-        model = query.scalar_one_or_none()
-        return model.to_entity() if model else None
+        self.db.add(db_item)
+        await self.db.commit()
+        await self.db.refresh(db_item)
+        return self._to_entity(db_item)
 
-    async def list_all(self) -> List[InventoryItem]:
-        query = await self.db.execute(select(InventoryItemModel))
-        inventory_models = query.scalars().all()
-        return [inventory.to_entity() for inventory in inventory_models]
+    async def update(self, item_id: int, item: InventoryItem):
+        db_item = await self.db.get(InventoryItemModel, item_id)
+        db_item.name = item.name
+        db_item.description = item.description
+        db_item.quantity = item.quantity
+        db_item.minimum_stock = item.minimum_stock
+        db_item.unit_price = item.unit_price
+        await self.db.commit()
+        return self._to_entity(db_item)
 
-    async def create(self, entity: InventoryItem) -> InventoryItem:
-        model = InventoryItemModel(
-            name=entity.name,
-            description=entity.description,
-            quantity=entity.quantity,
+
+    async def delete(self, item_id: int):
+        db_item = await self.db.get(InventoryItemModel, item_id)
+        await self.db.delete(db_item)
+        await self.db.commit()
+
+    def _to_entity(self, model: InventoryItemModel) -> InventoryItem:
+        return InventoryItem(
+            id=model.id,
+            name=model.name,
+            description=model.description,
+            quantity=model.quantity,
+            minimum_stock=model.minimum_stock,
+            unit_price=model.unit_price,
         )
-        self.db.add(model)
-        await self.db.commit()
-        await self.db.refresh(model)
-        return model.to_entity()
-
-    async def update(self, entity: InventoryItem) -> Optional[InventoryItem]:
-        model = await self.db.get(InventoryItemModel, entity.id)
-        if not model:
-            return None
-
-        model.name = entity.name
-        model.description = entity.description
-        model.quantity = entity.quantity
-
-        await self.db.commit()
-        await self.db.refresh(model)
-        return model.to_entity()
-
-    async def delete(self, item_id: int) -> None:
-        model = await self.db.get(InventoryItemModel, item_id)
-        if model:
-            await self.db.delete(model)
-            await self.db.commit()

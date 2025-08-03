@@ -1,24 +1,19 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
-from app.domain.entities.inventory_item import InventoryItem
+from typing import List
+from app.domain.entities.inventory_item_entity import InventoryItem
 
 class InventoryItemRepository(ABC):
     @abstractmethod
-    def get_by_id(self, item_id: int) -> Optional[InventoryItem]:
-        pass
-
+    async def list_all(self) -> List[InventoryItem]: ...
+    
     @abstractmethod
-    def list_all(self) -> List[InventoryItem]:
-        pass
-
+    async def get_by_id(self, item_id: int) -> InventoryItem: ...
+    
     @abstractmethod
-    def create(self, item: InventoryItem) -> InventoryItem:
-        pass
-
+    async def create(self, item: InventoryItem) -> InventoryItem: ...
+    
     @abstractmethod
-    def update(self, item: InventoryItem) -> InventoryItem:
-        pass
-
+    async def update(self, item_id: int, item: InventoryItem) -> InventoryItem: ...
+    
     @abstractmethod
-    def delete(self, item_id: int) -> None:
-        pass
+    async def delete(self, item_id: int) -> None: ...

@@ -1,25 +1,34 @@
 from dependency_injector import containers, providers
-from app.domain.entities.product import ProductEntityFactory
-from app.infrastructure.events.product import ProductCreatedQueueEvent, ProductUpdatedQueueEvent
+from app.infrastructure.database import database
+from app.infrastructure.repositories.inventory_item_repository_impl import InventoryItemRepositoryImpl
+from app.domain.use_cases.inventory_item_use_case import InventoryItemUseCase
+from app.infrastructure.repositories.vehicle_repository_impl import VehicleRepositoryImpl
+from app.domain.use_cases.vehicle_use_case import VehicleUseCase
 from app.infrastructure.handlers import Handlers
-from app.infrastructure.repositories.product_impl import ProductRepositoryImpl
-from app.application.services.product import ProductService
-
 
 class Container(containers.DeclarativeContainer):
 
-    #loads all handlers where @injects are set
     wiring_config = containers.WiringConfiguration(modules=Handlers.modules())
 
-    #Factories
-    product_factory = providers.Factory(ProductEntityFactory)
+    # Resource provider for DB session (async context manager)
+    db_session = providers.Resource(database.get_session)
 
-    #Repositories
-    product_repository = providers.Singleton(ProductRepositoryImpl)
+    # Repositories - recebem a sessão do db
+    inventory_item_repository = providers.Factory(
+        InventoryItemRepositoryImpl,
+        db=db_session
+    )
+    vehicle_repository = providers.Factory(
+        VehicleRepositoryImpl,
+        db=db_session
+    )
 
-    #Events
-    product_created_event = providers.Factory(ProductCreatedQueueEvent)
-    product_updated_event = providers.Factory(ProductUpdatedQueueEvent)
-
-    #Services
-    product_services = providers.Factory(ProductService, product_repository, product_created_event, product_updated_event)
+    # Use Cases recebem os repositórios
+    inventory_item_use_case = providers.Factory(
+        InventoryItemUseCase,
+        repository=inventory_item_repository
+    )
+    vehicle_use_case = providers.Factory(
+        VehicleUseCase,
+        repository=vehicle_repository
+    )
