@@ -9,14 +9,14 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '004_create_inventory_itens'
-down_revision = '003_create_servicos'
+revision = '003_create_inventory_itens'
+down_revision = '002_create_servicos'
 branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
     # Criar tabela inventory_items
-     op.create_table(
+    op.create_table(
         'inventory_items',
         sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
         sa.Column('name', sa.String(length=100), nullable=False),
