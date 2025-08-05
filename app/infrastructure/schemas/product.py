@@ -8,6 +8,7 @@ class ProductInput(BaseModel):
     stock: int
     image: str
 
+
 class ProductOutput(BaseModel):
     id: str
     name: str

@@ -8,10 +8,12 @@ from app.domain.repositories.product import ProductRepository
 class ProductUseCases(ABC):
 
     @abstractmethod
-    def __init__(self, product_repository: ProductRepository,
-                 product_created_event: ProductCreatedEvent,
-                 product_updated_event: ProductUpdatedEvent
-                 ):
+    def __init__(
+        self,
+        product_repository: ProductRepository,
+        product_created_event: ProductCreatedEvent,
+        product_updated_event: ProductUpdatedEvent,
+    ):
         self.product_repository = product_repository
         self.product_created_event = product_created_event
         self.product_updated_event = product_updated_event

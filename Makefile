@@ -1,6 +1,6 @@
 # Makefile para gerenciar o projeto tech-challenge
 
-.PHONY: help up down logs test migrate migrate-up migrate-down migrate-create build
+.PHONY: help up down logs test migrate migrate-up migrate-down migrate-create build format format-check lint check-all
 
 # Ajuda
 help:
@@ -13,6 +13,12 @@ help:
 	@echo "  make migrate-down - Reverter última migration"
 	@echo "  make migrate-create MSG=<message> - Criar nova migration"
 	@echo "  make build        - Construir imagens Docker"
+	@echo "  make install      - Instalar dependências"
+	@echo "  make install-dev  - Instalar dependências de desenvolvimento"
+	@echo "  make format       - Formatar código com Black"
+	@echo "  make format-check - Verificar formatação sem alterar arquivos"
+	@echo "  make lint         - Executar linting com flake8"
+	@echo "  make check-all    - Executar formatação, lint e testes"
 
 # Iniciar aplicação
 up:
@@ -65,3 +71,24 @@ shell:
 # Instalar dependências
 install:
 	docker-compose exec app pip install -r requirements.txt
+
+# Instalar dependências de desenvolvimento
+install-dev:
+	docker-compose exec app pip install -r requirements.txt
+	docker-compose exec app pip install black flake8 pytest pytest-asyncio
+
+# Formatar código com Black
+format:
+	docker-compose exec app black app/
+
+# Verificar formatação sem alterar arquivos
+format-check:
+	docker-compose exec app black app/ --check --diff
+
+# Executar linting com flake8
+lint:
+	docker-compose exec app flake8 app/
+
+# Executar formatação, lint e testes
+check-all: format lint test
+	@echo "✅ Formatação, linting e testes concluídos!"
