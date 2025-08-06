@@ -8,24 +8,24 @@ class ClienteRepository(ABC):
 
     @abstractmethod
     async def get_all(self) -> List[ClienteEntity]:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def get_by_id(self, id: str) -> ClienteEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def get_by_cpf(self, cpf: str) -> ClienteEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def add(self, cliente: ClienteEntity) -> ClienteEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def update(self, cliente: ClienteEntity) -> ClienteEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def delete(self, id: str) -> bool:
-        raise NotImplemented
+        raise NotImplementedError

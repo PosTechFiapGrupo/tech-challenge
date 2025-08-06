@@ -1,8 +1,17 @@
 from app.domain.exceptions import InvalidEmail, InvalidCPF, InvalidPhone
+from app.domain.repositories.cliente import ClienteRepository
+from fastapi import HTTPException
 import re
 
 
 class ClienteValidator:
+
+    def __init__(self, repository: ClienteRepository):
+        self.repository = repository
+
+    async def validate_exists(self, id: str) -> None:
+        if await self.repository.get_by_id(id) is None:
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
 
     @staticmethod
     def validate_email(email: str) -> None:

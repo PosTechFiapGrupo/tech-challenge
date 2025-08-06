@@ -6,18 +6,18 @@ class ClienteCreatedEvent(ABC):
 
     @abstractmethod
     def send(self, cliente: ClienteEntity) -> bool:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class ClienteUpdatedEvent(ABC):
 
     @abstractmethod
     def send(self, cliente: ClienteEntity) -> bool:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class ClienteDeletedEvent(ABC):
 
     @abstractmethod
     def send(self, cliente_id: str) -> bool:
-        raise NotImplemented
+        raise NotImplementedError

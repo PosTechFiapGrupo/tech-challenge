@@ -6,18 +6,18 @@ class ServicoCreatedEvent(ABC):
 
     @abstractmethod
     def send(self, servico: ServicoEntity) -> bool:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class ServicoUpdatedEvent(ABC):
 
     @abstractmethod
     def send(self, servico: ServicoEntity) -> bool:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class ServicoDeletedEvent(ABC):
 
     @abstractmethod
     def send(self, servico_id: str) -> bool:
-        raise NotImplemented
+        raise NotImplementedError
