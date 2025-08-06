@@ -4,7 +4,6 @@ from app.infrastructure.container import Container
 from app.infrastructure.handlers import Handlers
 from app.infrastructure.database import database
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup

@@ -30,7 +30,7 @@ services:
       - MYSQL_USER=tech_user
       - MYSQL_PASSWORD=tech_password
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
