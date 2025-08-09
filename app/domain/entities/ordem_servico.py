@@ -10,7 +10,7 @@ class OrdemServicoEntity:
         self,
         uid: str,
         cliente_id: str,
-        veiculo_id: str,
+        vehicle_id: int,
         servico_ids: List[str],
         status: StatusOrdemServico = StatusOrdemServico.RECEBIDA,
         mecanico_id: Optional[str] = None,
@@ -21,7 +21,7 @@ class OrdemServicoEntity:
     ):
         self.id = uid
         self.cliente_id = cliente_id
-        self.veiculo_id = veiculo_id
+        self.vehicle_id = vehicle_id
         self.servico_ids = servico_ids
         self.mecanico_id = mecanico_id
         self.atendente_id = atendente_id
@@ -57,7 +57,7 @@ class OrdemServicoEntityFactory:
     def create(
         id: Optional[str],
         cliente_id: str,
-        veiculo_id: str,
+        vehicle_id: int,
         servico_ids: List[str],
         mecanico_id: Optional[str] = None,
         atendente_id: Optional[str] = None,
@@ -70,7 +70,7 @@ class OrdemServicoEntityFactory:
         return OrdemServicoEntity(
             uid=id,
             cliente_id=cliente_id,
-            veiculo_id=veiculo_id,
+            vehicle_id=vehicle_id,
             servico_ids=servico_ids,
             mecanico_id=mecanico_id,
             atendente_id=atendente_id,

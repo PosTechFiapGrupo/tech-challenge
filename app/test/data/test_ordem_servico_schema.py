@@ -11,7 +11,7 @@ class TestOrdemServicoSchemas:
     def test_ordem_servico_input_valid(self):
         data = OrdemServicoInput(
             cliente_id="cli-1",
-            veiculo_id="vei-1",
+            vehicle_id=123,
             servico_ids=["s1", "s2"],
             status="recebida",
         )
@@ -26,6 +26,10 @@ class TestOrdemServicoSchemas:
             OrdemServicoUpdate(status="invalid_status")
 
     def test_data_abertura_optional(self):
-        OrdemServicoInput(
-            cliente_id="cli", veiculo_id="vei", servico_ids=["1"], status="recebida"
+        data = OrdemServicoInput(
+            cliente_id="cli",
+            vehicle_id=456,  # 🔁 agora é int
+            servico_ids=["1"],
+            status="recebida"
         )
+        assert data.vehicle_id == 456

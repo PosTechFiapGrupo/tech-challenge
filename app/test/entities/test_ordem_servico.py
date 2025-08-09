@@ -13,7 +13,7 @@ class TestOrdemServicoEntity:
         os = OrdemServicoEntity(
             uid="os-1",
             cliente_id="cli-1",
-            veiculo_id="vei-1",
+            vehicle_id="vei-1",
             servico_ids=["s1", "s2"],
             status=StatusOrdemServico.RECEBIDA,
         )
@@ -25,7 +25,7 @@ class TestOrdemServicoEntity:
         os = OrdemServicoEntity(
             uid="os-2",
             cliente_id="cli-2",
-            veiculo_id="vei-2",
+            vehicle_id="vei-2",
             servico_ids=["s3"],
             status=StatusOrdemServico.RECEBIDA,
         )
@@ -35,7 +35,7 @@ class TestOrdemServicoEntity:
         os = OrdemServicoEntity(
             uid="os-3",
             cliente_id="cli-3",
-            veiculo_id="vei-3",
+            vehicle_id="vei-3",
             servico_ids=["s4"],
             status=StatusOrdemServico.EM_DIAGNOSTICO,
         )
@@ -48,7 +48,7 @@ class TestOrdemServicoEntityFactory:
         os = OrdemServicoEntityFactory.create(
             id="os-4",
             cliente_id="cli-4",
-            veiculo_id="vei-4",
+            vehicle_id="vei-4",
             servico_ids=["s5", "s6"],
             status=StatusOrdemServico.RECEBIDA,
         )
@@ -59,7 +59,7 @@ class TestOrdemServicoEntityFactory:
         os = OrdemServicoEntityFactory.create(
             id=None,
             cliente_id="cli-5",
-            veiculo_id="vei-5",
+            vehicle_id="vei-5",
             servico_ids=["s7"],
             status=StatusOrdemServico.RECEBIDA,
         )

@@ -18,7 +18,7 @@ class OrdemServicoRepositoryImpl(OrdemServicoRepository):
         return OrdemServicoEntity(
             uid=str(model.id),
             cliente_id=str(model.cliente_id),
-            veiculo_id=str(model.veiculo_id),
+            vehicle_id=model.vehicle_id,
             mecanico_id=str(model.mecanico_id) if model.mecanico_id else None,
             atendente_id=str(model.atendente_id) if model.atendente_id else None,
             orcamento_id=str(model.orcamento_id) if model.orcamento_id else None,
@@ -41,7 +41,7 @@ class OrdemServicoRepositoryImpl(OrdemServicoRepository):
 
             model = OrdemServicoModel(
                 cliente_id=int(ordem_servico.cliente_id),
-                veiculo_id=int(ordem_servico.veiculo_id),
+                vehicle_id=int(ordem_servico.vehicle_id),
                 mecanico_id=(
                     int(ordem_servico.mecanico_id)
                     if ordem_servico.mecanico_id

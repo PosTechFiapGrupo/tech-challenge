@@ -1,8 +1,8 @@
-"""create ordem_servico and association table
+"""create ordens_servico and association table
 
-Revision ID: a7bbf8f8a82a
-Revises: 003_create_servicos
-Create Date: 2025-08-05 19:18:25.797485
+Revision ID: c436821072a4
+Revises: 5c689865e085
+Create Date: 2025-08-08 11:07:43.259429
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a7bbf8f8a82a'
-down_revision = '003_create_servicos'
+revision = 'c436821072a4'
+down_revision = '5c689865e085'
 branch_labels = None
 depends_on = None
 
@@ -21,7 +21,7 @@ def upgrade() -> None:
     op.create_table('ordens_servico',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('cliente_id', sa.Integer(), nullable=False),
-    sa.Column('veiculo_id', sa.Integer(), nullable=False),
+    sa.Column('vehicle_id', sa.Integer(), nullable=False),
     sa.Column('mecanico_id', sa.Integer(), nullable=True),
     sa.Column('atendente_id', sa.Integer(), nullable=True),
     sa.Column('orcamento_id', sa.Integer(), nullable=True),
@@ -29,6 +29,7 @@ def upgrade() -> None:
     sa.Column('data_abertura', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('data_fechamento', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['cliente_id'], ['clientes.id'], ),
+    sa.ForeignKeyConstraint(['vehicle_id'], ['vehicles.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('ordem_servico_servico',

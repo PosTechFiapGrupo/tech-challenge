@@ -26,7 +26,7 @@ class OrdemServicoModel(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=False)
-    veiculo_id = Column(Integer, nullable=False)  # futuro ForeignKey("veiculos.id")
+    vehicle_id = Column(Integer, ForeignKey("vehicles.id"), nullable=False)
     mecanico_id = Column(Integer, nullable=True)
     atendente_id = Column(Integer, nullable=True)
     orcamento_id = Column(Integer, nullable=True)
@@ -46,7 +46,7 @@ class OrdemServicoModel(Base):
         return {
             "id": self.id,
             "cliente_id": self.cliente_id,
-            "veiculo_id": self.veiculo_id,
+            "vehicle_id": self.vehicle_id,
             "mecanico_id": self.mecanico_id,
             "atendente_id": self.atendente_id,
             "orcamento_id": self.orcamento_id,

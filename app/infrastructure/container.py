@@ -1,5 +1,6 @@
 from dependency_injector import containers, providers
 
+from app.application.validators import vehicle_validator
 from app.infrastructure.database import database
 from app.infrastructure.handlers import Handlers
 
@@ -34,6 +35,7 @@ from app.infrastructure.events.ordem_servico import (
 from app.application.validators.cliente import ClienteValidator
 from app.application.validators.servico import ServicoValidator
 from app.application.validators.ordem_servico import OrdemServicoValidator
+from app.application.validators.veiculo import VeiculoValidator
 
 # Use Cases
 from app.domain.use_cases.ordem_servico_impl import OrdemServicoUseCasesImpl
@@ -44,6 +46,7 @@ from app.domain.use_cases.vehicle_use_case import VehicleUseCase
 from app.application.services.cliente import ClienteService
 from app.application.services.servico import ServicoService
 from app.application.services.ordem_servico import OrdemServicoService
+from app.application.services.vehicle import VehicleService
 
 class Container(containers.DeclarativeContainer):
 
@@ -87,21 +90,23 @@ class Container(containers.DeclarativeContainer):
         cliente_repository=cliente_repository,
         servico_repository=servico_repository,
     )
+    vehicle_validator = providers.Factory(
+        VeiculoValidator, vehicle_repository=vehicle_repository
+    )
 
     # Use Cases
     ordem_servico_use_case = providers.Factory(
         OrdemServicoUseCasesImpl,
-        repository=ordem_servico_repository,
-        factory=ordem_servico_factory,
-        ordem_servico_solicitada_event=ordem_servico_solicitada_event,
+        ordem_servico_repository=ordem_servico_repository,
+        os_criada_event=ordem_servico_solicitada_event,
         orcamento_solicitado_event=orcamento_solicitado_event,
         mecanico_designado_event=mecanico_designado_event,
         servicos_incluidos_event=servicos_incluidos_event,
-        peca_ou_insumo_incluido_event=peca_ou_insumo_incluido_event,
+        peca_incluida_event=peca_ou_insumo_incluido_event,
         orcamento_gerado_event=orcamento_gerado_event,
-        orcamento_enviado_ao_cliente_event=orcamento_enviado_ao_cliente_event,
-        ordem_servico_aceita_event=ordem_servico_aceita_event,
-        ordem_servico_realizada_event=ordem_servico_realizada_event,
+        orcamento_enviado_event=orcamento_enviado_ao_cliente_event,
+        os_aceita_event=ordem_servico_aceita_event,
+        os_realizada_event=ordem_servico_realizada_event,
     )
 
     inventory_item_use_case = providers.Factory(
@@ -131,5 +136,11 @@ class Container(containers.DeclarativeContainer):
         use_case=ordem_servico_use_case,
         cliente_validator=cliente_validator,
         servico_validator=servico_validator,
+        vehicle_validator=vehicle_validator,
         ordem_servico_validator=ordem_servico_validator,
+    )
+    vehicle_service = providers.Factory(
+        VehicleService,
+        use_case=vehicle_use_case,
+        vehicle_validator=vehicle_validator,
     )

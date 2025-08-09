@@ -16,24 +16,36 @@ def client():
 
 @pytest.fixture
 def mock_ordem_servico_service():
-    mock = AsyncMock()
-    mock.criar_ordem_servico = AsyncMock()
-    mock.listar_ordens_servico = AsyncMock()
-    mock.buscar_ordem_servico_por_id = AsyncMock()
-    mock.atualizar_ordem_servico = AsyncMock()
-    return mock
+    service = AsyncMock()
+    service.criar_ordem_servico = AsyncMock()
+    service.listar_ordens_servico = AsyncMock()
+    service.buscar_ordem_servico_por_id = AsyncMock()
+    service.atualizar_ordem_servico = AsyncMock()
+    service.iniciar_execucao = AsyncMock()
+    service.finalizar = AsyncMock()
+    service.cancelar = AsyncMock()
+
+    service.cliente_validator = AsyncMock()
+    service.cliente_validator.validate_exists = AsyncMock()
+
+    service.vehicle_validator = AsyncMock()
+    service.vehicle_validator.validate_exists = AsyncMock()
+
+    service.servico_validator = AsyncMock()
+    service.servico_validator.validate_exists = AsyncMock()
+
+    service.validator = AsyncMock()
+    service.validator.validate_status_transition = AsyncMock()
+
+    return service
 
 
 @pytest.fixture
 def sample_ordem_servico():
-    from datetime import datetime, timezone
-    from app.domain.entities.ordem_servico import OrdemServicoEntity
-    from app.domain.entities.status_ordem_servico import StatusOrdemServico
-
     return OrdemServicoEntity(
         uid="os-1",
         cliente_id="cliente-123",
-        veiculo_id="veiculo-456",
+        vehicle_id=456,
         servico_ids=["serv-1", "serv-2"],
         status=StatusOrdemServico.RECEBIDA,
         data_abertura=datetime.now(timezone.utc),
@@ -47,22 +59,22 @@ def sample_ordem_servico():
 class TestOrdemServicoAPI:
 
     def test_criar_ordem_servico_sucesso(
-        self, client, mock_ordem_servico_service, sample_ordem_servico
+            self, client, mock_ordem_servico_service, sample_ordem_servico
     ):
         payload = {
             "cliente_id": "cliente-123",
-            "veiculo_id": "veiculo-456",
+            "vehicle_id": 456,
             "servico_ids": ["serv-1", "serv-2"],
             "status": "recebida",
         }
 
-        mock_ordem_servico_service.criar_ordem_servico.return_value = (
-            sample_ordem_servico
-        )
+        mock_ordem_servico_service.criar_ordem_servico.return_value = sample_ordem_servico
 
-        with client.app.container.ordem_servico_service.override(
-            mock_ordem_servico_service
-        ):
+        mock_ordem_servico_service.cliente_validator.validate_exists.return_value = None
+        mock_ordem_servico_service.vehicle_validator.validate_exists.return_value = None
+        mock_ordem_servico_service.servico_validator.validate_exists.return_value = None
+
+        with client.app.container.ordem_servico_service.override(mock_ordem_servico_service):
             response = client.post("/ordens-servico/", json=payload)
 
         assert response.status_code == 201
@@ -75,7 +87,7 @@ class TestOrdemServicoAPI:
             OrdemServicoOutput(
                 id="os-1",
                 cliente_id="cli-1",
-                veiculo_id="veic-1",
+                vehicle_id=456,
                 servico_ids=["s1", "s2"],
                 status=StatusOrdemServico.RECEBIDA,
                 data_abertura=datetime.fromisoformat("2025-08-05T00:00:00+00:00"),

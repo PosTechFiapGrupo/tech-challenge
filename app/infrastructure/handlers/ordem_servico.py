@@ -26,7 +26,7 @@ async def create_ordem_servico(
         entity = OrdemServicoEntityFactory.create(
             id=None,
             cliente_id=ordem_servico_data.cliente_id,
-            veiculo_id=ordem_servico_data.veiculo_id,
+            vehicle_id=int(ordem_servico_data.vehicle_id),
             servico_ids=ordem_servico_data.servico_ids,
             mecanico_id=ordem_servico_data.mecanico_id,
             atendente_id=ordem_servico_data.atendente_id,
@@ -35,20 +35,24 @@ async def create_ordem_servico(
         )
 
         created = await service.criar_ordem_servico(entity)
-        return created.__dict__
+        print(f"created = {created} ({type(created)})")
+
+        return OrdemServicoOutput.model_validate(created).model_dump()
 
     except Exception as e:
+        import traceback
+        print("ERRO AO CRIAR OS:", traceback.format_exc())
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/", response_model=List[OrdemServicoOutput])
 @inject
 async def get_all_ordens_servico(
-    service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
-) -> List[dict]:
+        service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
+):
     try:
         ordens = await service.listar_ordens_servico()
-        return [os.__dict__ for os in ordens]
+        return [OrdemServicoOutput.model_validate(os).model_dump() for os in ordens]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -56,25 +60,25 @@ async def get_all_ordens_servico(
 @router.get("/{id}", response_model=OrdemServicoOutput)
 @inject
 async def get_ordem_servico_by_id(
-    id: str,
-    service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
-) -> dict:
+        id: str,
+        service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
+):
     os = await service.buscar_ordem_servico_por_id(id)
     if not os:
         raise HTTPException(status_code=404, detail="Ordem de serviço não encontrada")
-    return os.__dict__
+    return OrdemServicoOutput.model_validate(os).model_dump()
 
 
 @router.put("/{id}", response_model=OrdemServicoOutput)
 @inject
 async def update_ordem_servico(
-    id: str,
-    update_data: OrdemServicoUpdate,
-    service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
-) -> dict:
+        id: str,
+        update_data: OrdemServicoUpdate,
+        service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
+):
     try:
         updated = await service.atualizar_ordem_servico(id, update_data)
-        return updated
+        return OrdemServicoOutput.model_validate(updated).model_dump()
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -84,12 +88,12 @@ async def update_ordem_servico(
 @router.put("/{id}/iniciar-execucao", response_model=OrdemServicoOutput)
 @inject
 async def iniciar_execucao_ordem_servico(
-    id: str,
-    service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
+        id: str,
+        service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
 ):
     try:
         updated = await service.iniciar_execucao(id)
-        return updated
+        return OrdemServicoOutput.model_validate(updated).model_dump()
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -97,12 +101,12 @@ async def iniciar_execucao_ordem_servico(
 @router.put("/{id}/finalizar", response_model=OrdemServicoOutput)
 @inject
 async def finalizar_ordem_servico(
-    id: str,
-    service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
+        id: str,
+        service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
 ):
     try:
         updated = await service.finalizar(id)
-        return updated
+        return OrdemServicoOutput.model_validate(updated).model_dump()
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -115,6 +119,6 @@ async def cancelar_ordem_servico(
 ):
     try:
         updated = await service.cancelar(id)
-        return updated
+        return OrdemServicoOutput.model_validate(updated).model_dump()
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -3,6 +3,7 @@ from app.domain.use_cases.ordem_servico import OrdemServicoUseCases
 from app.application.validators.cliente import ClienteValidator
 from app.application.validators.servico import ServicoValidator
 from app.application.validators.ordem_servico import OrdemServicoValidator
+from app.application.validators.veiculo import VeiculoValidator
 from app.infrastructure.schemas.ordem_servico import OrdemServicoUpdate
 from app.domain.entities.status_ordem_servico import StatusOrdemServico
 from datetime import datetime
@@ -13,13 +14,13 @@ class OrdemServicoService:
         self,
         use_case: OrdemServicoUseCases,
         cliente_validator: ClienteValidator,
-        # veiculo_validator: VeiculoValidator,
+        vehicle_validator: VeiculoValidator,
         servico_validator: ServicoValidator,
         ordem_servico_validator: OrdemServicoValidator,
     ):
         self.use_case = use_case
         self.cliente_validator = cliente_validator
-        # self.veiculo_validator = veiculo_validator
+        self.vehicle_validator = vehicle_validator
         self.servico_validator = servico_validator
         self.validator = ordem_servico_validator
 
@@ -27,6 +28,7 @@ class OrdemServicoService:
         self, ordem_servico: OrdemServicoEntity
     ) -> OrdemServicoEntity:
         await self.cliente_validator.validate_exists(ordem_servico.cliente_id)
+        await self.vehicle_validator.validate_exists(ordem_servico.vehicle_id)
         for servico_id in ordem_servico.servico_ids:
             await self.servico_validator.validate_exists(servico_id)
 

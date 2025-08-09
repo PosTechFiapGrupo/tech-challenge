@@ -3,55 +3,68 @@ from typing import List
 from dependency_injector.wiring import inject, Provide
 from app.infrastructure.container import Container
 from app.infrastructure.schemas.vehicle_schema import VehicleCreate, VehicleUpdate, VehicleResponse
-from app.domain.use_cases.vehicle_use_case import VehicleUseCase
+from app.application.services.vehicle import VehicleService
 from app.domain.entities.vehicle import Vehicle
+from app.application.validators.vehicle_validator import validate_vehicle_plate
+from app.domain.exceptions import EntityAlreadyExists, EntityNotFound
 
 router = APIRouter(prefix="/vehicles", tags=["vehicles"])
+
 
 @router.post("/", response_model=VehicleResponse)
 @inject
 async def create_vehicle(
     data: VehicleCreate,
-    use_case: VehicleUseCase = Depends(Provide[Container.vehicle_use_case])
+    service: VehicleService = Depends(Provide[Container.vehicle_service])
 ):
-    vehicle = Vehicle(id=0, **data.dict())
-    created = await use_case.create(vehicle)
-    return created
+    if not validate_vehicle_plate(data.license_plate):
+        raise HTTPException(status_code=400, detail="Formato de placa inválido")
+
+    try:
+        vehicle = Vehicle(id=0, **data.dict())
+        created = await service.criar_vehicle(vehicle)
+        return created
+    except EntityAlreadyExists as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.get("/{vehicle_id}", response_model=VehicleResponse)
 @inject
 async def get_vehicle(
     vehicle_id: int,
-    use_case: VehicleUseCase = Depends(Provide[Container.vehicle_use_case])
+    service: VehicleService = Depends(Provide[Container.vehicle_service])
 ):
-    vehicle = await use_case.get(vehicle_id)
-    if not vehicle:
-        raise HTTPException(status_code=404, detail="Vehicle not found")
-    return vehicle
+    try:
+        return await service.buscar_vehicle_por_id(vehicle_id)
+    except EntityNotFound as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
 
 @router.get("/", response_model=List[VehicleResponse])
 @inject
 async def list_vehicles(
-    use_case: VehicleUseCase = Depends(Provide[Container.vehicle_use_case])
+    service: VehicleService = Depends(Provide[Container.vehicle_service])
 ):
-    return await use_case.list()
+    return await service.listar_vehicles()
+
 
 @router.put("/", response_model=VehicleResponse)
 @inject
 async def update_vehicle(
     data: VehicleUpdate,
-    use_case: VehicleUseCase = Depends(Provide[Container.vehicle_use_case])
+    service: VehicleService = Depends(Provide[Container.vehicle_service])
 ):
     vehicle = Vehicle(**data.dict())
-    updated = await use_case.update(vehicle)
+    updated = await service.atualizar_vehicle(vehicle)
     if not updated:
         raise HTTPException(status_code=404, detail="Vehicle not found")
     return updated
+
 
 @router.delete("/{vehicle_id}", status_code=204)
 @inject
 async def delete_vehicle(
     vehicle_id: int,
-    use_case: VehicleUseCase = Depends(Provide[Container.vehicle_use_case])
+    service: VehicleService = Depends(Provide[Container.vehicle_service])
 ):
-    await use_case.delete(vehicle_id)
+    await service.deletar_vehicle(vehicle_id)
