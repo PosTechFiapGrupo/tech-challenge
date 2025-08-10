@@ -9,7 +9,16 @@ from app.infrastructure.schemas.ordem_servico import (
     OrdemServicoUpdate,
     OrdemServicoOutput,
 )
+from app.infrastructure.schemas.ordem_servico_servico import (
+    AddServicoToOrdemServicoInput,
+    OrdemServicoServicoOutput,
+)
+from app.infrastructure.schemas.ordem_servico_inventory_item import (
+    AddInventoryItemToOrdemServicoInput,
+    OrdemServicoInventoryItemOutput,
+)
 from app.domain.entities.ordem_servico import OrdemServicoEntityFactory
+from app.domain.entities.status_ordem_servico import StatusOrdemServico
 
 router = APIRouter(prefix="/ordens-servico", tags=["ordens_servico"])
 
@@ -31,7 +40,7 @@ async def create_ordem_servico(
             mecanico_id=ordem_servico_data.mecanico_id,
             atendente_id=ordem_servico_data.atendente_id,
             orcamento_id=ordem_servico_data.orcamento_id,
-            status=ordem_servico_data.status,
+            status=ordem_servico_data.status or StatusOrdemServico.RECEBIDA,
         )
 
         created = await service.criar_ordem_servico(entity)
@@ -122,3 +131,45 @@ async def cancelar_ordem_servico(
         return OrdemServicoOutput.model_validate(updated).model_dump()
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/{ordem_servico_id}/servicos", response_model=OrdemServicoServicoOutput, status_code=status.HTTP_201_CREATED)
+@inject
+async def adicionar_servico_a_ordem_servico(
+    ordem_servico_id: str,
+    servico_data: AddServicoToOrdemServicoInput,
+    service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
+):
+    """Adiciona um serviço a uma ordem de serviço. O valor será automaticamente copiado do preço atual do serviço."""
+    try:
+        relacao = await service.adicionar_servico(
+            ordem_servico_id=ordem_servico_id,
+            servico_id=servico_data.servico_id,
+            observacoes=servico_data.observacoes
+        )
+        return OrdemServicoServicoOutput.model_validate(relacao).model_dump()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{ordem_servico_id}/itens", response_model=OrdemServicoInventoryItemOutput, status_code=status.HTTP_201_CREATED)
+@inject
+async def adicionar_item_a_ordem_servico(
+    ordem_servico_id: str,
+    item_data: AddInventoryItemToOrdemServicoInput,
+    service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
+):
+    """Adiciona um item de inventário a uma ordem de serviço. O valor será automaticamente copiado do preço atual do item."""
+    try:
+        relacao = await service.adicionar_item_inventario(
+            ordem_servico_id=ordem_servico_id,
+            inventory_item_id=item_data.inventory_item_id,
+            quantidade=item_data.quantidade
+        )
+        return OrdemServicoInventoryItemOutput.model_validate(relacao).model_dump()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

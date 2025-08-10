@@ -24,7 +24,7 @@ def upgrade() -> None:
     sa.Column('brand', sa.String(length=50), nullable=False),
     sa.Column('model', sa.String(length=50), nullable=False),
     sa.Column('year', sa.Integer(), nullable=False),
-    sa.Column('client_id', sa.Integer(), nullable=True),
+    sa.Column('client_id', sa.String(length=36), nullable=True),
     sa.ForeignKeyConstraint(['client_id'], ['clientes.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('license_plate')

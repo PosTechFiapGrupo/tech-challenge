@@ -24,6 +24,7 @@ help:
 	@echo "  make format-check - Verificar formatação sem alterar arquivos"
 	@echo "  make lint         - Executar linting com flake8"
 	@echo "  make check-all    - Executar formatação, lint e testes"
+	@echo "  make populate-db  - Popular banco de dados com dados fictícios"
 
 # Iniciar aplicação
 up:
@@ -39,7 +40,7 @@ logs:
 
 # Executar testes
 test:
-	$(DOCKER_COMPOSE) exec app python -m pytest app/test/ -v
+	$(DOCKER_COMPOSE) exec app python -m pytest app/test/ -v --disable-warnings
 
 # Aplicar migrations
 migrate-up:
@@ -97,6 +98,10 @@ lint:
 # Executar formatação, lint e testes
 check-all: format lint test
 	@echo "✅ Formatação, linting e testes concluídos!"
+
+# Popular banco de dados com dados fictícios
+populate-db:
+	$(DOCKER_COMPOSE) exec app python populate_db.py
 
 # Ver qual comando docker-compose está sendo usado
 print-docker-compose:

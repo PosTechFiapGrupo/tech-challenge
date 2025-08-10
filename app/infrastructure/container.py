@@ -15,6 +15,8 @@ from app.infrastructure.repositories.servico_impl import ServicoRepositoryImpl
 from app.infrastructure.repositories.ordem_servico_impl import OrdemServicoRepositoryImpl
 from app.infrastructure.repositories.inventory_item_repository_impl import InventoryItemRepositoryImpl
 from app.infrastructure.repositories.vehicle_repository_impl import VehicleRepositoryImpl
+from app.infrastructure.repositories.ordem_servico_servico_impl import OrdemServicoServicoRepositoryImpl
+from app.infrastructure.repositories.ordem_servico_inventory_item_impl import OrdemServicoInventoryItemRepositoryImpl
 
 # Events
 from app.infrastructure.events.cliente import ClienteCreatedQueueEvent, ClienteUpdatedQueueEvent, ClienteDeletedQueueEvent
@@ -47,6 +49,7 @@ from app.application.services.cliente import ClienteService
 from app.application.services.servico import ServicoService
 from app.application.services.ordem_servico import OrdemServicoService
 from app.application.services.vehicle import VehicleService
+from app.application.services.orcamento import OrcamentoService
 
 class Container(containers.DeclarativeContainer):
 
@@ -64,6 +67,8 @@ class Container(containers.DeclarativeContainer):
     ordem_servico_repository = providers.Singleton(OrdemServicoRepositoryImpl)
     inventory_item_repository = providers.Factory(InventoryItemRepositoryImpl, db=db_session)
     vehicle_repository = providers.Factory(VehicleRepositoryImpl, db=db_session)
+    ordem_servico_servico_repository = providers.Singleton(OrdemServicoServicoRepositoryImpl)
+    ordem_servico_inventory_item_repository = providers.Singleton(OrdemServicoInventoryItemRepositoryImpl)
 
     # Events
     cliente_created_event = providers.Factory(ClienteCreatedQueueEvent)
@@ -138,9 +143,21 @@ class Container(containers.DeclarativeContainer):
         servico_validator=servico_validator,
         vehicle_validator=vehicle_validator,
         ordem_servico_validator=ordem_servico_validator,
+        servico_use_case=servico_service,
+        inventory_item_use_case=inventory_item_use_case,
+        os_servico_repository=ordem_servico_servico_repository,
+        os_item_repository=ordem_servico_inventory_item_repository,
     )
     vehicle_service = providers.Factory(
         VehicleService,
         use_case=vehicle_use_case,
         vehicle_validator=vehicle_validator,
+    )
+    orcamento_service = providers.Factory(
+        OrcamentoService,
+        ordem_servico_repository=ordem_servico_repository,
+        servico_repository=servico_repository,
+        inventory_repository=inventory_item_repository,
+        os_servico_repository=ordem_servico_servico_repository,
+        os_inventory_repository=ordem_servico_inventory_item_repository,
     )

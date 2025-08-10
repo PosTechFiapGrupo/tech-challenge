@@ -38,12 +38,36 @@ def mock_ordem_servico_validator():
 
 
 @pytest.fixture
+def mock_servico_use_case():
+    return AsyncMock()
+
+
+@pytest.fixture
+def mock_inventory_item_use_case():
+    return AsyncMock()
+
+
+@pytest.fixture
+def mock_os_servico_repository():
+    return AsyncMock()
+
+
+@pytest.fixture
+def mock_os_item_repository():
+    return AsyncMock()
+
+
+@pytest.fixture
 def ordem_servico_service(
     mock_use_case,
     mock_cliente_validator,
     mock_vehicle_validator,
     mock_servico_validator,
     mock_ordem_servico_validator,
+    mock_servico_use_case,
+    mock_inventory_item_use_case,
+    mock_os_servico_repository,
+    mock_os_item_repository,
 ):
     return OrdemServicoService(
         use_case=mock_use_case,
@@ -51,6 +75,10 @@ def ordem_servico_service(
         vehicle_validator=mock_vehicle_validator,
         servico_validator=mock_servico_validator,
         ordem_servico_validator=mock_ordem_servico_validator,
+        servico_use_case=mock_servico_use_case,
+        inventory_item_use_case=mock_inventory_item_use_case,
+        os_servico_repository=mock_os_servico_repository,
+        os_item_repository=mock_os_item_repository,
     )
 
 
@@ -59,7 +87,7 @@ def sample_os():
     return OrdemServicoEntity(
         uid="1",
         cliente_id="123",
-        vehicle_id="456",
+        vehicle_id=456,
         servico_ids=["1", "2"],
         status=StatusOrdemServico.RECEBIDA,
     )
@@ -80,7 +108,7 @@ async def test_criar_ordem_servico(
 
     assert result == sample_os
     mock_cliente_validator.validate_exists.assert_called_once_with("123")
-    mock_vehicle_validator.validate_exists.assert_called_once_with("456")
+    mock_vehicle_validator.validate_exists.assert_called_once_with(456)
     assert mock_servico_validator.validate_exists.call_count == 2
     mock_use_case.create_ordem_servico.assert_called_once_with(sample_os)
 
