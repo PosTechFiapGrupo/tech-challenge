@@ -1,3 +1,21 @@
+class DomainError(Exception):
+    """Base class for all domain-level exceptions."""
+
+
+class EntityNotFound(DomainError):
+    def __init__(self, entity: str = "Entity"):
+        super().__init__(f"{entity} not found")
+
+
+class EntityAlreadyExists(DomainError):
+    def __init__(self, entity: str = "Entity"):
+        super().__init__(f"{entity} already exists")
+
+
+class InvalidDataError(DomainError):
+    def __init__(self, message: str = "Invalid data"):
+        super().__init__(message)
+
 class InvalidDescription(Exception):
     def __init__(self):
         super().__init__("The description must have less than 50 characters")

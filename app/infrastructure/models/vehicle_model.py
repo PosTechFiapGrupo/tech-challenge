@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from app.infrastructure.database import Base
 
 class VehicleModel(Base):
@@ -9,3 +9,4 @@ class VehicleModel(Base):
     brand = Column(String(50), nullable=False)
     model = Column(String(50), nullable=False)
     year = Column(Integer, nullable=False)
+    client_id = Column(Integer, ForeignKey("clientes.id"), nullable=True)
