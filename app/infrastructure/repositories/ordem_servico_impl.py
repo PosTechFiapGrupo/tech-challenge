@@ -140,8 +140,7 @@ class OrdemServicoRepositoryImpl(OrdemServicoRepository):
                 status=StatusOrdemServico(model.status),
                 data_abertura=model.data_abertura,
             )
-
-
+    
     async def calcular_tempo_medio_execucao(self) -> timedelta | None:
         async for session in self.database.get_session():
             query = select(

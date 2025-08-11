@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from dependency_injector.wiring import inject, Provide
-
+from app.infrastructure.auth_dependencies import role_required
 from app.infrastructure.container import Container
 from app.application.services.ordem_servico import OrdemServicoService
 from app.infrastructure.schemas.ordem_servico import (
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/ordens-servico", tags=["ordens_servico"])
 
 
 @router.post(
-    "/", response_model=OrdemServicoOutput, status_code=status.HTTP_201_CREATED
+    "/", response_model=OrdemServicoOutput, status_code=status.HTTP_201_CREATED, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))]
 )
 @inject
 async def create_ordem_servico(
@@ -54,7 +54,7 @@ async def create_ordem_servico(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/", response_model=List[OrdemServicoOutput])
+@router.get("/", response_model=List[OrdemServicoOutput], dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def get_all_ordens_servico(
         service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
@@ -66,7 +66,7 @@ async def get_all_ordens_servico(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{id}", response_model=OrdemServicoOutput)
+@router.get("/{id}", response_model=OrdemServicoOutput, dependencies=[Depends(role_required("admin", "atendente", "mecanico", "cliente"))])
 @inject
 async def get_ordem_servico_by_id(
         id: str,
@@ -78,7 +78,7 @@ async def get_ordem_servico_by_id(
     return OrdemServicoOutput.model_validate(os).model_dump()
 
 
-@router.put("/{id}", response_model=OrdemServicoOutput)
+@router.put("/{id}", response_model=OrdemServicoOutput, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def update_ordem_servico(
         id: str,
@@ -94,7 +94,7 @@ async def update_ordem_servico(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/{id}/iniciar-execucao", response_model=OrdemServicoOutput)
+@router.put("/{id}/iniciar-execucao", response_model=OrdemServicoOutput, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def iniciar_execucao_ordem_servico(
         id: str,
@@ -107,7 +107,7 @@ async def iniciar_execucao_ordem_servico(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.put("/{id}/finalizar", response_model=OrdemServicoOutput)
+@router.put("/{id}/finalizar", response_model=OrdemServicoOutput, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def finalizar_ordem_servico(
         id: str,
@@ -120,7 +120,7 @@ async def finalizar_ordem_servico(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.put("/{id}/cancelar", response_model=OrdemServicoOutput)
+@router.put("/{id}/cancelar", response_model=OrdemServicoOutput, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def cancelar_ordem_servico(
     id: str,
@@ -133,7 +133,7 @@ async def cancelar_ordem_servico(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/{ordem_servico_id}/servicos", response_model=OrdemServicoServicoOutput, status_code=status.HTTP_201_CREATED)
+@router.post("/{ordem_servico_id}/servicos", response_model=OrdemServicoServicoOutput, status_code=status.HTTP_201_CREATED, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def adicionar_servico_a_ordem_servico(
     ordem_servico_id: str,
@@ -154,7 +154,7 @@ async def adicionar_servico_a_ordem_servico(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{ordem_servico_id}/itens", response_model=OrdemServicoInventoryItemOutput, status_code=status.HTTP_201_CREATED)
+@router.post("/{ordem_servico_id}/itens", response_model=OrdemServicoInventoryItemOutput, status_code=status.HTTP_201_CREATED, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def adicionar_item_a_ordem_servico(
     ordem_servico_id: str,

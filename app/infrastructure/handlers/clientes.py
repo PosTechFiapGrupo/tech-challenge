@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.domain.entities.cliente import ClienteEntity, ClienteEntityFactory
 from app.infrastructure.container import Container
 from app.application.services.cliente import ClienteService
+from app.infrastructure.auth_dependencies import role_required
 from app.infrastructure.schemas.cliente import (
     ClienteOutput,
     ClienteInput,
@@ -13,7 +14,7 @@ from app.infrastructure.schemas.cliente import (
 router = APIRouter(prefix="/clientes", tags=["clientes"])
 
 
-@router.get("/", response_model=List[ClienteOutput])
+@router.get("/", response_model=List[ClienteOutput], dependencies=[Depends(role_required("admin", "atendente"))])
 @inject
 async def get_all_clientes(
     cliente_service: ClienteService = Depends(Provide[Container.cliente_service]),
@@ -27,7 +28,7 @@ async def get_all_clientes(
         )
 
 
-@router.get("/{id}", response_model=ClienteOutput)
+@router.get("/{id}", response_model=ClienteOutput, dependencies=[Depends(role_required("admin", "atendente"))])
 @inject
 async def get_cliente_by_id(
     id: str,
@@ -50,7 +51,7 @@ async def get_cliente_by_id(
         )
 
 
-@router.get("/cpf/{cpf}", response_model=ClienteOutput)
+@router.get("/cpf/{cpf}", response_model=ClienteOutput, dependencies=[Depends(role_required("admin", "atendente"))])
 @inject
 async def get_cliente_by_cpf(
     cpf: str,
@@ -69,7 +70,7 @@ async def get_cliente_by_cpf(
         )
 
 
-@router.post("/", response_model=ClienteOutput, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ClienteOutput, status_code=status.HTTP_201_CREATED, dependencies=[Depends(role_required("admin", "atendente"))])
 @inject
 async def create_cliente(
     cliente_data: ClienteInput,
@@ -92,7 +93,7 @@ async def create_cliente(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.put("/{id}", response_model=ClienteOutput)
+@router.put("/{id}", response_model=ClienteOutput, dependencies=[Depends(role_required("admin", "atendente"))])
 @inject
 async def update_cliente(
     id: str,
@@ -125,7 +126,7 @@ async def update_cliente(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(role_required("admin", "atendente"))])
 @inject
 async def delete_cliente(
     id: str,

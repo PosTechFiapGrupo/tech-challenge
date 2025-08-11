@@ -9,6 +9,7 @@ import uuid
 from decimal import Decimal
 from faker import Faker
 from faker.providers import automotive
+from app.application.services.password_service import PasswordService
 
 from app.infrastructure.database import database
 from app.infrastructure.models.cliente import ClienteModel
@@ -18,6 +19,7 @@ from app.infrastructure.models.inventory_item_model import InventoryItemModel
 from app.infrastructure.models.ordem_servico import OrdemServicoModel
 from app.infrastructure.models.ordem_servico_servico import OrdemServicoServicoModel
 from app.infrastructure.models.ordem_servico_inventory_item import OrdemServicoInventoryItemModel
+from app.infrastructure.models.user_model import UserModel
 
 fake = Faker('pt_BR')
 fake.add_provider(automotive)
@@ -60,6 +62,42 @@ INVENTORY_ITEMS_BASE = [
 ]
 
 STATUS_OPTIONS = ["recebida", "em_diagnostico", "aguardando_aprovacao", "em_execucao", "finalizada", "entregue"]
+
+async def create_users(session, count=20):
+    """Cria um usuário admin fixo + usuários fictícios."""
+    print(f"Criando usuário admin fixo e mais {count} usuários...")
+
+    password_service = PasswordService()
+    funcoes = ["admin", "cliente", "mecanico", "atendente"]
+
+    #Criar usuário admin fixo para testes
+    hashed_pw = password_service.hash_password("senha123")  # senha fixa para login
+    admin_user = UserModel(
+        id=str(uuid.uuid4()),
+        nome="Admin Test",
+        email="admin@test.com",
+        hashed_password=hashed_pw,
+        funcao="admin"
+    )
+    session.add(admin_user)
+
+    #Criar usuários aleatórios para preencher o banco
+    users = []
+    for _ in range(count):
+        hashed_pw = password_service.hash_password("senha123")
+        user = UserModel(
+            id=str(uuid.uuid4()),
+            nome=fake.name(),
+            email=fake.email(),
+            hashed_password=hashed_pw,
+            funcao=fake.random.choice(funcoes)
+        )
+        users.append(user)
+
+    session.add_all(users)
+    await session.flush()
+
+    return [admin_user] + users
 
 async def create_clientes(session, count=20):
     """Criar clientes fictícios"""
@@ -240,6 +278,7 @@ async def populate_database():
     
     try:
         # Criar dados em ordem de dependência
+        users = await create_users(session, 20)
         clientes = await create_clientes(session, 25)
         vehicles = await create_vehicles(session, clientes, 40)
         servicos = await create_servicos(session)
@@ -255,6 +294,7 @@ async def populate_database():
         
         # Estatísticas
         print(f"📊 Estatísticas:")
+        print(f"   - {len(users)} usuários criados")
         print(f"   - {len(clientes)} clientes criados")
         print(f"   - {len(vehicles)} veículos criados")
         print(f"   - {len(servicos)} serviços criados")

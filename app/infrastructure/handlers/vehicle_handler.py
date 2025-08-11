@@ -7,11 +7,12 @@ from app.application.services.vehicle import VehicleService
 from app.domain.entities.vehicle import Vehicle
 from app.application.validators.vehicle_validator import validate_vehicle_plate
 from app.domain.exceptions import EntityAlreadyExists, EntityNotFound
+from app.infrastructure.auth_dependencies import role_required
 
 router = APIRouter(prefix="/vehicles", tags=["vehicles"])
 
 
-@router.post("/", response_model=VehicleResponse)
+@router.post("/", response_model=VehicleResponse, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def create_vehicle(
     data: VehicleCreate,
@@ -28,7 +29,7 @@ async def create_vehicle(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/{vehicle_id}", response_model=VehicleResponse)
+@router.get("/{vehicle_id}", response_model=VehicleResponse, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def get_vehicle(
     vehicle_id: int,
@@ -40,7 +41,7 @@ async def get_vehicle(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.get("/", response_model=List[VehicleResponse])
+@router.get("/", response_model=List[VehicleResponse], dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def list_vehicles(
     service: VehicleService = Depends(Provide[Container.vehicle_service])
@@ -48,7 +49,7 @@ async def list_vehicles(
     return await service.listar_vehicles()
 
 
-@router.put("/", response_model=VehicleResponse)
+@router.put("/", response_model=VehicleResponse, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def update_vehicle(
     data: VehicleUpdate,
@@ -61,7 +62,7 @@ async def update_vehicle(
     return updated
 
 
-@router.delete("/{vehicle_id}", status_code=204)
+@router.delete("/{vehicle_id}", status_code=204, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def delete_vehicle(
     vehicle_id: int,

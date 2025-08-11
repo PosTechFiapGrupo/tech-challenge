@@ -4,17 +4,18 @@ from dependency_injector.wiring import inject, Provide
 from app.infrastructure.container import Container
 from app.infrastructure.schemas.inventory_item_schema import InventoryItemCreate, InventoryItemOut, InventoryItemUpdate
 from app.domain.use_cases.inventory_item_use_case import InventoryItemUseCase
+from app.infrastructure.auth_dependencies import role_required
 
 router = APIRouter(prefix="/inventory", tags=["Inventory Items"])
 
-@router.get("/", response_model=List[InventoryItemOut])
+@router.get("/", response_model=List[InventoryItemOut], dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def list_items(
     use_case: InventoryItemUseCase = Depends(Provide[Container.inventory_item_use_case])
 ):
     return await use_case.list_items()
 
-@router.get("/{item_id}", response_model=InventoryItemOut)
+@router.get("/{item_id}", response_model=InventoryItemOut, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def get_item(
     item_id: int,
@@ -22,7 +23,7 @@ async def get_item(
 ):
     return await use_case.get_item(item_id)
 
-@router.post("/", response_model=InventoryItemOut, status_code=201)
+@router.post("/", response_model=InventoryItemOut, status_code=201, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def create_item(
     item: InventoryItemCreate,
@@ -30,7 +31,7 @@ async def create_item(
 ):
     return await use_case.create_item(item)
 
-@router.put("/{item_id}", response_model=InventoryItemOut)
+@router.put("/{item_id}", response_model=InventoryItemOut, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def update_item(
     item_id: int,
@@ -39,7 +40,7 @@ async def update_item(
 ):
     return await use_case.update_item(item_id, item)
 
-@router.delete("/{item_id}", status_code=204)
+@router.delete("/{item_id}", status_code=204, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def delete_item(
     item_id: int,

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.domain.entities.servico import ServicoEntity, ServicoEntityFactory
 from app.infrastructure.container import Container
 from app.application.services.servico import ServicoService
+from app.infrastructure.auth_dependencies import role_required
 from app.infrastructure.schemas.servico import (
     ServicoOutput,
     ServicoInput,
@@ -13,7 +14,7 @@ from app.infrastructure.schemas.servico import (
 router = APIRouter(prefix="/servicos", tags=["servicos"])
 
 
-@router.get("/", response_model=List[ServicoOutput])
+@router.get("/", response_model=List[ServicoOutput], dependencies=[Depends(role_required("admin"))])
 @inject
 async def get_all_servicos(
     servico_service: ServicoService = Depends(Provide[Container.servico_service]),
@@ -27,7 +28,7 @@ async def get_all_servicos(
         )
 
 
-@router.get("/{id}", response_model=ServicoOutput)
+@router.get("/{id}", response_model=ServicoOutput, dependencies=[Depends(role_required("admin"))])
 @inject
 async def get_servico_by_id(
     id: str,
@@ -50,7 +51,7 @@ async def get_servico_by_id(
         )
 
 
-@router.post("/", response_model=ServicoOutput, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ServicoOutput, status_code=status.HTTP_201_CREATED, dependencies=[Depends(role_required("admin"))])
 @inject
 async def create_servico(
     servico_data: ServicoInput,
@@ -69,7 +70,7 @@ async def create_servico(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.put("/{id}", response_model=ServicoOutput)
+@router.put("/{id}", response_model=ServicoOutput, dependencies=[Depends(role_required("admin"))])
 @inject
 async def update_servico(
     id: str,
@@ -98,7 +99,7 @@ async def update_servico(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(role_required("admin"))])
 @inject
 async def delete_servico(
     id: str,

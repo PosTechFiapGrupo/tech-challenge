@@ -49,3 +49,13 @@ class InvalidCPF(Exception):
 class InvalidPhone(Exception):
     def __init__(self):
         super().__init__("The phone number must have at least 10 digits")
+
+
+class InvalidName(Exception):
+    def __init__(self):
+        super().__init__("O nome informado é inválido. Ele deve ter pelo menos 3 caracteres.")
+
+
+class InvalidPassword(Exception):
+    def __init__(self):
+        super().__init__("A senha informada é inválida. Ela deve ter pelo menos 8 caracteres.")

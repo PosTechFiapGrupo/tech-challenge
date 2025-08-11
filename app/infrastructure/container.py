@@ -7,13 +7,21 @@ from app.infrastructure.handlers import Handlers
 # Entities
 from app.domain.entities.cliente import ClienteEntityFactory
 from app.domain.entities.servico import ServicoEntityFactory
+from app.domain.entities.user import UserEntityFactory
 from app.domain.entities.ordem_servico import OrdemServicoEntityFactory
 
 # Repositories
 from app.infrastructure.repositories.cliente_impl import ClienteRepositoryImpl
 from app.infrastructure.repositories.servico_impl import ServicoRepositoryImpl
 from app.infrastructure.repositories.ordem_servico_impl import OrdemServicoRepositoryImpl
+from app.infrastructure.events.user_events import (
+    UserCreatedQueueEvent,
+    UserUpdatedQueueEvent,
+    UserDeletedQueueEvent,
+)
+
 from app.infrastructure.repositories.inventory_item_repository_impl import InventoryItemRepositoryImpl
+from app.infrastructure.repositories.user_repository_impl import UserRepositoryImpl
 from app.infrastructure.repositories.vehicle_repository_impl import VehicleRepositoryImpl
 from app.infrastructure.repositories.ordem_servico_servico_impl import OrdemServicoServicoRepositoryImpl
 from app.infrastructure.repositories.ordem_servico_inventory_item_impl import OrdemServicoInventoryItemRepositoryImpl
@@ -45,11 +53,19 @@ from app.domain.use_cases.inventory_item_use_case import InventoryItemUseCase
 from app.domain.use_cases.vehicle_use_case import VehicleUseCase
 
 # Services
+from app.infrastructure.repositories.cliente_impl import ClienteRepositoryImpl
+from app.infrastructure.repositories.servico_impl import ServicoRepositoryImpl
+from app.domain.use_cases.inventory_item_use_case import InventoryItemUseCase
+from app.domain.use_cases.user_use_case import UserUseCases
+from app.domain.use_cases.vehicle_use_case import VehicleUseCase
+from app.infrastructure.handlers import Handlers
 from app.application.services.cliente import ClienteService
 from app.application.services.servico import ServicoService
 from app.application.services.ordem_servico import OrdemServicoService
 from app.application.services.vehicle import VehicleService
 from app.application.services.orcamento import OrcamentoService
+from app.application.services.user_service import UserService
+from app.application.services.password_service import PasswordService
 
 class Container(containers.DeclarativeContainer):
 
@@ -59,6 +75,7 @@ class Container(containers.DeclarativeContainer):
     # Factories
     cliente_factory = providers.Factory(ClienteEntityFactory)
     servico_factory = providers.Factory(ServicoEntityFactory)
+    user_factory = providers.Factory(UserEntityFactory)
     ordem_servico_factory = providers.Factory(OrdemServicoEntityFactory)
 
     # Repositories
@@ -69,6 +86,7 @@ class Container(containers.DeclarativeContainer):
     vehicle_repository = providers.Factory(VehicleRepositoryImpl, db=db_session)
     ordem_servico_servico_repository = providers.Singleton(OrdemServicoServicoRepositoryImpl)
     ordem_servico_inventory_item_repository = providers.Singleton(OrdemServicoInventoryItemRepositoryImpl)
+    user_repository = providers.Singleton(UserRepositoryImpl)
 
     # Events
     cliente_created_event = providers.Factory(ClienteCreatedQueueEvent)
@@ -86,6 +104,9 @@ class Container(containers.DeclarativeContainer):
     orcamento_enviado_ao_cliente_event = providers.Factory(OrcamentoEnviadoAoClienteQueueEvent)
     ordem_servico_aceita_event = providers.Factory(OrdemServicoAceitaQueueEvent)
     ordem_servico_realizada_event = providers.Factory(OrdemServicoRealizadaQueueEvent)
+    user_created_event = providers.Factory(UserCreatedQueueEvent)
+    user_updated_event = providers.Factory(UserUpdatedQueueEvent)
+    user_deleted_event = providers.Factory(UserDeletedQueueEvent)
 
     # Validators
     cliente_validator = providers.Singleton(ClienteValidator, cliente_repository)
@@ -122,6 +143,9 @@ class Container(containers.DeclarativeContainer):
     )
 
     # Services
+    password_service = providers.Singleton(
+        PasswordService,
+    )
     cliente_service = providers.Factory(
         ClienteService,
         cliente_repository,
@@ -136,6 +160,16 @@ class Container(containers.DeclarativeContainer):
         servico_updated_event,
         servico_deleted_event,
     )
+
+        user_service = providers.Factory(
+        UserService,
+        user_repository,
+        password_service,
+        user_created_event,
+        user_updated_event,
+        user_deleted_event,
+    )
+
     ordem_servico_service = providers.Factory(
         OrdemServicoService,
         use_case=ordem_servico_use_case,
@@ -147,7 +181,7 @@ class Container(containers.DeclarativeContainer):
         inventory_item_use_case=inventory_item_use_case,
         os_servico_repository=ordem_servico_servico_repository,
         os_item_repository=ordem_servico_inventory_item_repository,
-    )
+      
     vehicle_service = providers.Factory(
         VehicleService,
         use_case=vehicle_use_case,
