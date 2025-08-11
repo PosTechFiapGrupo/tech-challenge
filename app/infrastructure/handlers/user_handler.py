@@ -9,10 +9,11 @@ from app.infrastructure.schemas.user_schema import (
     UserUpdate,
 )
 from app.infrastructure.container import Container
+from app.infrastructure.auth_dependencies import role_required
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.get("/", response_model=List[UserOutput])
+@router.get("/", response_model=List[UserOutput], dependencies=[Depends(role_required("admin"))])
 @inject
 async def get_all_users(
     user_service: UserService = Depends(Provide[Container.user_service]),
@@ -24,7 +25,7 @@ async def get_all_users(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@router.get("/email/{user_email}", response_model=UserOutput)
+@router.get("/email/{user_email}", response_model=UserOutput, dependencies=[Depends(role_required("admin"))])
 @inject
 async def get_user_by_email(
     user_email: str,
@@ -41,7 +42,7 @@ async def get_user_by_email(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@router.get("/id/{user_id}", response_model=UserOutput)
+@router.get("/id/{user_id}", response_model=UserOutput, dependencies=[Depends(role_required("admin"))])
 @inject
 async def get_user_by_id(
     user_id: str,
@@ -50,7 +51,7 @@ async def get_user_by_id(
     try:
         user = await user_service.get_user_by_id(user_id)
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado TESTE")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado")
         return user.__dict__
     except HTTPException:
         raise
@@ -58,7 +59,7 @@ async def get_user_by_id(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@router.post("/", response_model=UserOutput, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=UserOutput, status_code=status.HTTP_201_CREATED, dependencies=[Depends(role_required("admin"))])
 @inject
 async def create_user(
     user_data: UserCreate,
@@ -83,7 +84,7 @@ async def create_user(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.put("/id/{user_id}", response_model=UserOutput)
+@router.put("/id/{user_id}", response_model=UserOutput, dependencies=[Depends(role_required("admin"))])
 @inject
 async def update_user(
     user_id: str,
@@ -116,7 +117,7 @@ async def update_user(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.delete("/id/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/id/{user_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(role_required("admin"))])
 @inject
 async def delete_user(
     user_id: str,

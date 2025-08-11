@@ -26,20 +26,20 @@ class ServicoUseCases(ABC):
 
     @abstractmethod
     async def get_all_servicos(self) -> List[ServicoEntity]:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def get_servico_by_id(self, id: str) -> ServicoEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def create_servico(self, servico: ServicoEntity) -> ServicoEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def update_servico(self, servico: ServicoEntity) -> ServicoEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def delete_servico(self, id: str) -> bool:
-        raise NotImplemented
+        raise NotImplementedError

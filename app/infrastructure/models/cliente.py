@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, String, DateTime
 from sqlalchemy.sql import func
 from app.infrastructure.database import Base
 
@@ -6,7 +6,7 @@ from app.infrastructure.database import Base
 class ClienteModel(Base):
     __tablename__ = "clientes"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(String(36), primary_key=True)
     nome = Column(String(100), nullable=False)
     telefone = Column(String(20), nullable=True)
     email = Column(String(100), nullable=True)

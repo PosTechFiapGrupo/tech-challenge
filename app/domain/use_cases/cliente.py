@@ -26,24 +26,24 @@ class ClienteUseCases(ABC):
 
     @abstractmethod
     async def get_all_clientes(self) -> List[ClienteEntity]:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def get_cliente_by_id(self, id: str) -> ClienteEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def get_cliente_by_cpf(self, cpf: str) -> ClienteEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def create_cliente(self, cliente: ClienteEntity) -> ClienteEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def update_cliente(self, cliente: ClienteEntity) -> ClienteEntity:
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     async def delete_cliente(self, id: str) -> bool:
-        raise NotImplemented
+        raise NotImplementedError

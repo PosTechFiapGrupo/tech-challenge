@@ -27,23 +27,18 @@ class ServicoRepositoryImpl(ServicoRepository):
             ]
 
     async def get_by_id(self, id: str) -> ServicoEntity | None:
-        try:
-            servico_id = int(id)
-        except ValueError:
-            return None
-            
         async for session in self.database.get_session():
-            stmt = select(ServicoModel).where(ServicoModel.id == servico_id)
+            stmt = select(ServicoModel).where(ServicoModel.id == id)
             result = await session.execute(stmt)
             servico = result.scalar_one_or_none()
-            
+
             if servico is None:
                 return None
-                
+
             return ServicoEntityFactory.create(
                 id=str(servico.id),
                 descricao=servico.descricao,
-                preco=float(servico.preco)
+                preco=float(servico.preco),
             )
 
     async def add(self, servico: ServicoEntity) -> ServicoEntity:
@@ -55,40 +50,31 @@ class ServicoRepositoryImpl(ServicoRepository):
             session.add(servico_model)
             await session.flush()
             await session.refresh(servico_model)
-            await session.commit()  # Commit explícito
+            await session.commit()
             
             servico.id = str(servico_model.id)
             return servico
 
     async def update(self, servico: ServicoEntity) -> ServicoEntity:
-        try:
-            servico_id = int(servico.id)
-        except ValueError:
-            raise ValueError(f"Invalid servico ID: {servico.id}")
-            
         async for session in self.database.get_session():
-            stmt = update(ServicoModel).where(ServicoModel.id == servico_id).values(
-                descricao=servico.descricao,
-                preco=servico.preco
+            stmt = (
+                update(ServicoModel)
+                .where(ServicoModel.id == servico.id)
+                .values(descricao=servico.descricao, preco=servico.preco)
             )
             result = await session.execute(stmt)
-            
+
             if result.rowcount == 0:
                 raise ValueError(f"Servico with id {servico.id} not found")
-            
-            await session.commit()  # Commit explícito
+
+            await session.commit()
             return servico
 
     async def delete(self, id: str) -> bool:
-        try:
-            servico_id = int(id)
-        except ValueError:
-            return False
-            
         async for session in self.database.get_session():
-            stmt = delete(ServicoModel).where(ServicoModel.id == servico_id)
+            stmt = delete(ServicoModel).where(ServicoModel.id == id)
             result = await session.execute(stmt)
             success = result.rowcount > 0
             if success:
-                await session.commit()  # Commit explícito
+                await session.commit()
             return success

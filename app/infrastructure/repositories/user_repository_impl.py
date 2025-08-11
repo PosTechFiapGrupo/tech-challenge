@@ -30,19 +30,12 @@ class UserRepositoryImpl(UserRepository):
             ]
 
     async def get_by_id(self, id: str) -> UserEntity | None:
-        try:
-            user_id = int(id)
-        except ValueError:
-            return None
-
         async for session in self.database.get_session():
-            stmt = select(UserModel).where(UserModel.id == user_id)
+            stmt = select(UserModel).where(UserModel.id == id)
             result = await session.execute(stmt)
             user = result.scalar_one_or_none()
-
             if user is None:
                 return None
-
             return UserEntityFactory.create(
                 id=str(user.id),
                 nome=user.nome,
@@ -90,34 +83,22 @@ class UserRepositoryImpl(UserRepository):
             return user
 
     async def update(self, user: UserEntity) -> UserEntity:
-        try:
-            user_id = int(user.id)
-        except ValueError:
-            raise ValueError(f"Invalid user ID: {user.id}")
-
         async for session in self.database.get_session():
-            stmt = update(UserModel).where(UserModel.id == user_id).values(
+            stmt = update(UserModel).where(UserModel.id == user.id).values(
                 nome=user.nome,
                 email=user.email,
                 hashed_password=user.hashed_password,
                 funcao=user.funcao
             )
             result = await session.execute(stmt)
-
             if result.rowcount == 0:
                 raise ValueError(f"User with id {user.id} not found")
-
             await session.commit()
             return user
 
     async def delete(self, id: str) -> bool:
-        try:
-            user_id = int(id)
-        except ValueError:
-            return False
-
         async for session in self.database.get_session():
-            stmt = delete(UserModel).where(UserModel.id == user_id)
+            stmt = delete(UserModel).where(UserModel.id == id)
             result = await session.execute(stmt)
             success = result.rowcount > 0
             if success:

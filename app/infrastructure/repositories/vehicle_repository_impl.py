@@ -1,9 +1,12 @@
 from typing import List, Optional
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
+
 from app.domain.entities.vehicle import Vehicle
 from app.domain.repositories.vehicle_repository import VehicleRepository
 from app.infrastructure.models.vehicle_model import VehicleModel
+
 
 class VehicleRepositoryImpl(VehicleRepository):
     def __init__(self, db: AsyncSession):
@@ -18,7 +21,24 @@ class VehicleRepositoryImpl(VehicleRepository):
                 license_plate=vehicle_model.license_plate,
                 brand=vehicle_model.brand,
                 model=vehicle_model.model,
-                year=vehicle_model.year
+                year=vehicle_model.year,
+                client_id=vehicle_model.client_id
+            )
+        return None
+
+    async def get_by_plate(self, plate: str) -> Optional[Vehicle]:
+        result = await self.db.execute(
+            select(VehicleModel).where(VehicleModel.license_plate == plate)
+        )
+        vehicle_model = result.scalar_one_or_none()
+        if vehicle_model:
+            return Vehicle(
+                id=vehicle_model.id,
+                license_plate=vehicle_model.license_plate,
+                brand=vehicle_model.brand,
+                model=vehicle_model.model,
+                year=vehicle_model.year,
+                client_id=vehicle_model.client_id
             )
         return None
 
@@ -31,7 +51,8 @@ class VehicleRepositoryImpl(VehicleRepository):
                 license_plate=v.license_plate,
                 brand=v.brand,
                 model=v.model,
-                year=v.year
+                year=v.year,
+                client_id=v.client_id
             ) for v in vehicles
         ]
 
@@ -40,27 +61,36 @@ class VehicleRepositoryImpl(VehicleRepository):
             license_plate=vehicle.license_plate,
             brand=vehicle.brand,
             model=vehicle.model,
-            year=vehicle.year
+            year=vehicle.year,
+            client_id=vehicle.client_id
         )
-        self.db.add(vehicle_model)
-        await self.db.commit()
-        await self.db.refresh(vehicle_model)
-        return Vehicle(
-            id=vehicle_model.id,
-            license_plate=vehicle_model.license_plate,
-            brand=vehicle_model.brand,
-            model=vehicle_model.model,
-            year=vehicle_model.year
-        )
+        try:
+            self.db.add(vehicle_model)
+            await self.db.commit()
+            await self.db.refresh(vehicle_model)
+            return Vehicle(
+                id=vehicle_model.id,
+                license_plate=vehicle_model.license_plate,
+                brand=vehicle_model.brand,
+                model=vehicle_model.model,
+                year=vehicle_model.year,
+                client_id=vehicle_model.client_id
+            )
+        except IntegrityError as e:
+            await self.db.rollback()
+            raise e
 
     async def update(self, vehicle: Vehicle) -> Optional[Vehicle]:
         vehicle_model = await self.db.get(VehicleModel, vehicle.id)
         if not vehicle_model:
             return None
+
         vehicle_model.license_plate = vehicle.license_plate
         vehicle_model.brand = vehicle.brand
         vehicle_model.model = vehicle.model
         vehicle_model.year = vehicle.year
+        vehicle_model.client_id = vehicle.client_id
+
         await self.db.commit()
         await self.db.refresh(vehicle_model)
         return Vehicle(
@@ -68,7 +98,8 @@ class VehicleRepositoryImpl(VehicleRepository):
             license_plate=vehicle_model.license_plate,
             brand=vehicle_model.brand,
             model=vehicle_model.model,
-            year=vehicle_model.year
+            year=vehicle_model.year,
+            client_id=vehicle_model.client_id
         )
 
     async def delete(self, vehicle_id: int) -> None:

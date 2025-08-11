@@ -76,6 +76,6 @@ class TestServicoService:
     @pytest.mark.asyncio
     async def test_create_servico_with_invalid_descricao(self, servico_service):
         from app.domain.exceptions import InvalidDescription
-        
+
         with pytest.raises(InvalidDescription):
             servico = ServicoEntity("1", "", 150.00)

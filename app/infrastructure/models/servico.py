@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DECIMAL, DateTime
+from sqlalchemy import Column, String, DECIMAL, DateTime
 from sqlalchemy.sql import func
 from app.infrastructure.database import Base
 
@@ -6,7 +6,7 @@ from app.infrastructure.database import Base
 class ServicoModel(Base):
     __tablename__ = "servicos"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(String(36), primary_key=True)
     descricao = Column(String(255), nullable=False)
     preco = Column(DECIMAL(precision=10, scale=2), nullable=False)
     atualizado_em = Column(

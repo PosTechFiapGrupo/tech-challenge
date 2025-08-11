@@ -1,7 +1,15 @@
 from app.domain.exceptions import InvalidPrice, PriceIsLessThanOrEqualToZero
+from app.domain.repositories.servico import ServicoRepository
+from fastapi import HTTPException
 
 
 class ServicoValidator:
+    def __init__(self, repository: ServicoRepository):
+        self.repository = repository
+
+    async def validate_exists(self, id: str) -> None:
+        if await self.repository.get_by_id(id) is None:
+            raise HTTPException(status_code=404, detail="Serviço não encontrado")
 
     @staticmethod
     def validate_preco(preco: float) -> float:

@@ -3,6 +3,7 @@ from typing import Optional
 from enum import Enum
 
 class UserFuncao(str, Enum):
+    admin= "admin"
     cliente = "cliente"
     mecanico = "mecanico"
     atendente = "atendente"

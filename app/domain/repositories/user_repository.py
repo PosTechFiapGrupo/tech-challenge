@@ -9,7 +9,7 @@ class UserRepository(ABC):
         raise NotImplemented
     
     @abstractmethod
-    async def get_by_id(self, user_id: int) -> Optional[UserEntity]:
+    async def get_by_id(self, user_id: str) -> Optional[UserEntity]:
         raise NotImplemented
     
     @abstractmethod
@@ -25,6 +25,6 @@ class UserRepository(ABC):
         raise NotImplemented
 
     @abstractmethod
-    async def delete(self, user_id: int) -> None:
+    async def delete(self, user_id: str) -> None:
         raise NotImplemented
 
