@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from app.domain.entities.ordem_servico_servico import OrdemServicoServicoEntity
-
+from datetime import timedelta
 
 class OrdemServicoServicoRepository(ABC):
     
@@ -17,4 +17,8 @@ class OrdemServicoServicoRepository(ABC):
     
     @abstractmethod
     async def remover_servico_da_os(self, ordem_servico_id: str, servico_id: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def calcular_tempo_medio_execucao(self) -> timedelta | None:
         pass
