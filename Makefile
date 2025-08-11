@@ -58,6 +58,9 @@ migrate-create:
 build:
 	$(DOCKER_COMPOSE) build
 
+build-up:
+	$(DOCKER_COMPOSE) up -d --build
+
 # Executar app em modo desenvolvimento
 dev:
 	$(DOCKER_COMPOSE) up app

@@ -54,7 +54,16 @@ make migrate-up
 docker-compose exec app alembic upgrade head
 ```
 
-### 4. Acessar a aplicação
+### 4. Popular banco de dados (opcional)
+
+Para popular o banco com dados fictícios para testes:
+
+```bash
+# Usando Make
+make populate-db
+```
+
+### 5. Acessar a aplicação
 
 - API: http://localhost:8000
 - Documentação (Swagger): http://localhost:8000/docs
@@ -132,6 +141,9 @@ make migrate-up
 
 # Reverter última migration
 make migrate-down
+
+# Popular banco com dados fictícios (após aplicar migrations)
+make populate-db
 ```
 
 ## 📚 API Endpoints (Exemplo)

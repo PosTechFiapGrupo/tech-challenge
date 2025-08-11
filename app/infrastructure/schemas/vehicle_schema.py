@@ -1,15 +1,16 @@
-from typing import Optional
-from pydantic import BaseModel, constr, conint, validator
+from typing import Optional, Annotated
+from pydantic import BaseModel, field_validator, Field
 from app.application.validators.vehicle_validator import validate_vehicle_plate
 
 class VehicleBase(BaseModel):
-    license_plate: constr(min_length=5, max_length=10)
-    brand: constr(min_length=1, max_length=50)
-    model: constr(min_length=1, max_length=50)
-    year: conint(ge=1886)
+    license_plate: Annotated[str, Field(min_length=5, max_length=10)]
+    brand: Annotated[str, Field(min_length=1, max_length=50)]
+    model: Annotated[str, Field(min_length=1, max_length=50)]
+    year: Annotated[int, Field(ge=1886)]
     client_id: Optional[str] = None
 
-    @validator('license_plate')
+    @field_validator('license_plate')
+    @classmethod
     def plate_must_be_valid(cls, license_plate):
         if not validate_vehicle_plate(license_plate):
             raise ValueError('Formato de placa de veículo inválido')

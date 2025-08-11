@@ -8,6 +8,7 @@ from app.infrastructure.schemas.ordem_servico import (
     OrdemServicoInput,
     OrdemServicoUpdate,
     OrdemServicoOutput,
+    OrdemServicoStatusQuery,
 )
 from app.infrastructure.schemas.ordem_servico_servico import (
     AddServicoToOrdemServicoInput,
@@ -62,6 +63,23 @@ async def get_all_ordens_servico(
     try:
         ordens = await service.listar_ordens_servico()
         return [OrdemServicoOutput.model_validate(os).model_dump() for os in ordens]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/status/{status}", response_model=List[OrdemServicoOutput])
+@inject
+async def get_ordens_servico_by_status(
+        status: str,
+        service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
+):
+    try:
+        # Validar o status usando o schema
+        status_query = OrdemServicoStatusQuery(status=status)
+        ordens = await service.listar_ordens_servico_por_status(status_query.status)
+        return [OrdemServicoOutput.model_validate(os).model_dump() for os in ordens]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
