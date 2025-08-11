@@ -4,8 +4,9 @@ from app.domain.repositories.ordem_servico import OrdemServicoRepository
 from app.infrastructure.models.ordem_servico import OrdemServicoModel
 from app.infrastructure.models.ordem_servico_servico import OrdemServicoServicoModel
 from app.domain.entities.status_ordem_servico import StatusOrdemServico
+from datetime import timedelta
 from app.infrastructure.database import database
-
+from sqlalchemy import select, func, text
 
 class OrdemServicoRepositoryImpl(OrdemServicoRepository):
     def __init__(self):
@@ -139,3 +140,22 @@ class OrdemServicoRepositoryImpl(OrdemServicoRepository):
                 status=StatusOrdemServico(model.status),
                 data_abertura=model.data_abertura,
             )
+
+
+    async def calcular_tempo_medio_execucao(self) -> timedelta | None:
+        async for session in self.database.get_session():
+            query = select(
+                func.avg(
+                    func.timestampdiff(
+                        text('SECOND'),
+                        OrdemServicoModel.data_abertura,
+                        OrdemServicoModel.data_fechamento
+                    )
+                )
+            ).where(OrdemServicoModel.data_fechamento.isnot(None))
+
+            result = await session.execute(query)
+            tempo_medio_segundos = result.scalar()
+            if tempo_medio_segundos is not None:
+                return timedelta(seconds=float(tempo_medio_segundos))  # CONVERTE PARA float AQUI
+            return None
