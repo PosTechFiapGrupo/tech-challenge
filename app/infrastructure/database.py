@@ -43,3 +43,7 @@ class DatabaseConfig:
 
 # Global database instance
 database = DatabaseConfig()
+
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    async for session in database.get_session():
+        yield session

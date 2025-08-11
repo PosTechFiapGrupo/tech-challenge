@@ -1,12 +1,17 @@
 FROM python:3.12-slim
 
 # Instalar dependências do sistema necessárias para MySQL
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     default-libmysqlclient-dev \
     pkg-config \
+    build-essential \
+    libffi-dev \
+    libssl-dev \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Define diretório de trabalho dentro do container
 WORKDIR /app
 
 # Copiar arquivos de dependências
