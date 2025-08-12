@@ -1,4 +1,5 @@
 from dependency_injector import containers, providers
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.validators import vehicle_validator
 from app.infrastructure.database import database
@@ -19,6 +20,8 @@ from app.infrastructure.events.user_events import (
     UserUpdatedQueueEvent,
     UserDeletedQueueEvent,
 )
+from app.infrastructure.repositories.inventory_stock_repository_impl import InventoryStockRepositoryImpl
+
 
 from app.infrastructure.repositories.inventory_item_repository_impl import InventoryItemRepositoryImpl
 from app.infrastructure.repositories.user_repository_impl import UserRepositoryImpl
@@ -51,6 +54,8 @@ from app.application.validators.veiculo import VeiculoValidator
 from app.domain.use_cases.ordem_servico_impl import OrdemServicoUseCasesImpl
 from app.domain.use_cases.inventory_item_use_case import InventoryItemUseCase
 from app.domain.use_cases.vehicle_use_case import VehicleUseCase
+from app.domain.use_cases.inventory_stock_use_case import InventoryStockUseCase
+
 
 # Services
 from app.infrastructure.repositories.cliente_impl import ClienteRepositoryImpl
@@ -164,6 +169,7 @@ class Container(containers.DeclarativeContainer):
         servico_updated_event,
         servico_deleted_event,
     )
+    
     user_service = providers.Factory(
         UserService,
         user_repository,
@@ -184,7 +190,7 @@ class Container(containers.DeclarativeContainer):
         inventory_item_use_case=inventory_item_use_case,
         os_servico_repository=ordem_servico_servico_repository,
         os_item_repository=ordem_servico_inventory_item_repository,
-    )
+        )
       
     vehicle_service = providers.Factory(
         VehicleService,
@@ -198,4 +204,13 @@ class Container(containers.DeclarativeContainer):
         inventory_repository=inventory_item_repository,
         os_servico_repository=ordem_servico_servico_repository,
         os_inventory_repository=ordem_servico_inventory_item_repository,
+    )
+    inventory_stock_repository = providers.Factory(
+        InventoryStockRepositoryImpl,
+        db=db_session
+        )
+
+    inventory_stock_use_case = providers.Factory(
+        InventoryStockUseCase,
+        repo=inventory_stock_repository,
     )
