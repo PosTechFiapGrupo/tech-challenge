@@ -59,3 +59,15 @@ class InvalidName(Exception):
 class InvalidPassword(Exception):
     def __init__(self):
         super().__init__("A senha informada é inválida. Ela deve ter pelo menos 8 caracteres.")
+
+class ClienteNotFound(DomainError):
+    """Exceção lançada quando um cliente não é encontrado"""
+    pass
+
+class ServicoNotFound(DomainError):
+    """Exceção lançada quando um serviço não é encontrado"""
+    pass
+
+class VehicleNotFound(DomainError):
+    """Exceção lançada quando um veículo não é encontrado"""
+    pass
