@@ -37,6 +37,7 @@ cd tech-challenge
 ### 2. Subir a aplicação
 
 ```bash
+# Renomeie o arquivo "env-example" para ".env", com isso as informações necessárias para o teste serão carregadas.
 # Usando Make
 make up
 
@@ -68,6 +69,19 @@ make populate-db
 - API: http://localhost:8000
 - Documentação (Swagger): http://localhost:8000/docs
 - Redoc: http://localhost:8000/redoc
+
+## 🧪 Testes
+
+Para executar os testes:
+
+```bash
+# Usando Docker Compose diretamente
+docker-compose exec app python -m pytest app/test/ -v
+
+# Para testes utilizando FastAPI - Swagger UI, recomendamos a utilização do usuario padrão de ADMIN que possui acesso a todas as rotas.
+# Os dados para login deste usuario se encontram em populate_db.py.
+```
+
 
 ## 📝 Comandos disponíveis (Makefile)
 
@@ -309,19 +323,6 @@ make populate-db
   "email": "user@example.com",
   "cpf": "string"
 }
-```
-
-## 🧪 Testes
-
-Para executar os testes:
-
-```bash
-# Renomeie o arquivo "env-example" para ".env", com isso as informações necessárias para o teste serão carregadas.
-# Usando Docker Compose diretamente
-docker-compose exec app python -m pytest app/test/ -v
-
-# Para testes utilizando FastAPI - Swagger UI, recomendamos a utilização do usuario padrão de ADMIN que possui acesso a todas as rotas.
-# Os dados para login deste usuario se encontram em populate_db.py.
 ```
 
 ## 🔒 Segurança e Boas Práticas
