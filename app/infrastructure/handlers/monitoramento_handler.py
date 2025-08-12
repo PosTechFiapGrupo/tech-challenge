@@ -14,7 +14,7 @@ def format_timedelta(td: timedelta) -> str:
     minutos, segundos = divmod(resto, 60)
     return f"{dias} dias, {horas} horas, {minutos} minutos"
 
-@router.get("/tempo-medio-servicos", response_model=TempoMedioServicosOut)
+@router.get("/tempo-medio-servicos", response_model=TempoMedioServicosOut, dependencies=[Depends(role_required("admin", "atendente"))])
 async def tempo_medio_servicos():
     repo = OrdemServicoRepositoryImpl()
     service = MonitoramentoService(repo)
