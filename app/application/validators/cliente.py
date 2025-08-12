@@ -1,17 +1,23 @@
-from app.domain.exceptions import InvalidEmail, InvalidCPF, InvalidPhone
-from app.domain.repositories.cliente import ClienteRepository
-from fastapi import HTTPException
 import re
+
+from app.domain.exceptions import InvalidEmail, InvalidCPF, InvalidPhone, ClienteNotFound
+from app.domain.repositories.cliente import ClienteRepository
+
 
 
 class ClienteValidator:
 
-    def __init__(self, repository: ClienteRepository):
-        self.repository = repository
+    def __init__(self, cliente_repository: ClienteRepository):
+        self.cliente_repository = cliente_repository
 
-    async def validate_exists(self, id: str) -> None:
-        if await self.repository.get_by_id(id) is None:
-            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    async def validate_exists(self, cliente_id: str) -> None:
+        """Valida se o cliente existe"""
+        if not cliente_id:
+            raise ValueError("ID do cliente é obrigatório")
+        
+        cliente = await self.cliente_repository.get_by_id(cliente_id)
+        if not cliente:
+            raise ClienteNotFound(f"Cliente com ID '{cliente_id}' não encontrado")
 
     @staticmethod
     def validate_email(email: str) -> None:

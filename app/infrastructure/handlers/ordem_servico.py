@@ -1,8 +1,11 @@
+import logging
+import traceback
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from dependency_injector.wiring import inject, Provide
 from app.infrastructure.auth_dependencies import role_required
 from app.infrastructure.container import Container
+
 from app.application.services.ordem_servico import OrdemServicoService
 from app.infrastructure.schemas.ordem_servico import (
     OrdemServicoInput,
@@ -20,6 +23,9 @@ from app.infrastructure.schemas.ordem_servico_inventory_item import (
 )
 from app.domain.entities.ordem_servico import OrdemServicoEntityFactory
 from app.domain.entities.status_ordem_servico import StatusOrdemServico
+from app.domain.exceptions import ClienteNotFound, ServicoNotFound, VehicleNotFound
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/ordens-servico", tags=["ordens_servico"])
 
@@ -41,18 +47,28 @@ async def create_ordem_servico(
             mecanico_id=ordem_servico_data.mecanico_id,
             atendente_id=ordem_servico_data.atendente_id,
             orcamento_id=ordem_servico_data.orcamento_id,
-            status=ordem_servico_data.status or StatusOrdemServico.RECEBIDA,
+            status=StatusOrdemServico(ordem_servico_data.status),
         )
-
+        
         created = await service.criar_ordem_servico(entity)
-        print(f"created = {created} ({type(created)})")
-
         return OrdemServicoOutput.model_validate(created).model_dump()
-
+    
+    except (ClienteNotFound, ServicoNotFound, VehicleNotFound) as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail=str(e)
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail=str(e)
+        )
     except Exception as e:
-        import traceback
-        print("ERRO AO CRIAR OS:", traceback.format_exc())
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"ERRO AO CRIAR OS: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=400, 
+            detail=str(e)
+        )
 
 
 @router.get("/", response_model=List[OrdemServicoOutput], dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
