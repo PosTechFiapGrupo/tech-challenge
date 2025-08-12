@@ -79,7 +79,9 @@ Para executar os testes:
 docker-compose exec app python -m pytest app/test/ -v
 
 # Para testes utilizando FastAPI - Swagger UI, recomendamos a utilização do usuario padrão de ADMIN que possui acesso a todas as rotas.
-# Os dados para login deste usuario se encontram em populate_db.py.
+admin@test.com
+senha123
+# Os dados para login deste usuario também se encontram em populate_db.py.
 ```
 
 
