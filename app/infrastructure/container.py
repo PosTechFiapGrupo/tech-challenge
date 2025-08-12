@@ -184,6 +184,7 @@ class Container(containers.DeclarativeContainer):
         inventory_item_use_case=inventory_item_use_case,
         os_servico_repository=ordem_servico_servico_repository,
         os_item_repository=ordem_servico_inventory_item_repository,
+    )
       
     vehicle_service = providers.Factory(
         VehicleService,
