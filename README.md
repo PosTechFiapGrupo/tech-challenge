@@ -136,22 +136,23 @@ make migrate-down
 
 ## 📚 API Endpoints (Exemplo)
 
-### Produtos
+### Clientes
 
-- `GET /products/` - Listar todos os produtos
-- `GET /products/{id}` - Obter produto por ID
-- `POST /products/` - Criar novo produto
-- `PUT /products/{id}` - Atualizar produto existente
+- `GET /clientes/` - Listar todos os clientes
+- `POST /clientes/` - Criar novo cliente
+- `GET /clientes/{id}` - Obter cliente por ID
+- `PUT /cliente/{id}` - Atualizar cliente existente
+- `DELETE /cliente/{id}` - Deletar cliente existente
+- `GET /clientes/cpf/{cpf}` - Obter cliente por CPF
 
-### Exemplo de payload para criação/atualização:
+### Exemplo de payload para criação/atualização de clientes:
 
 ```json
 {
-  "name": "Produto Exemplo",
-  "description": "Descrição do produto",
-  "price": 29.99,
-  "stock": 100,
-  "image": "produto.jpg"
+  "nome": "string",
+  "telefone": "string",
+  "email": "user@example.com",
+  "cpf": "string"
 }
 ```
 
@@ -160,11 +161,12 @@ make migrate-down
 Para executar os testes:
 
 ```bash
-# Usando Make
-make test
-
-# Ou usando Docker Compose diretamente
+# Renomeie o arquivo "env-example" para ".env", com isso as informações necessárias para o teste serão carregadas.
+# Usando Docker Compose diretamente
 docker-compose exec app python -m pytest app/test/ -v
+
+# Para testes utilizando FastAPI - Swagger UI, recomendamos a utilização do usuario padrão de ADMIN que possui acesso a todas as rotas.
+# Os dados para login deste usuario se encontram em populate_db.py.
 ```
 
 ## 📁 Estrutura do Projeto
