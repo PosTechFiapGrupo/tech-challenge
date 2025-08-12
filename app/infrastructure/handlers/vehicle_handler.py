@@ -12,7 +12,6 @@ from app.infrastructure.auth_dependencies import role_required
 router = APIRouter(prefix="/vehicles", tags=["vehicles"])
 
 
-
 @router.post("/", response_model=VehicleResponse, dependencies=[Depends(role_required("admin", "atendente", "mecanico"))])
 @inject
 async def create_vehicle(

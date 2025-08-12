@@ -67,7 +67,6 @@ from app.application.services.orcamento import OrcamentoService
 from app.application.services.user_service import UserService
 from app.application.services.password_service import PasswordService
 
-
 class Container(containers.DeclarativeContainer):
 
     wiring_config = containers.WiringConfiguration(modules=Handlers.modules())
@@ -105,6 +104,9 @@ class Container(containers.DeclarativeContainer):
     orcamento_enviado_ao_cliente_event = providers.Factory(OrcamentoEnviadoAoClienteQueueEvent)
     ordem_servico_aceita_event = providers.Factory(OrdemServicoAceitaQueueEvent)
     ordem_servico_realizada_event = providers.Factory(OrdemServicoRealizadaQueueEvent)
+    user_created_event = providers.Factory(UserCreatedQueueEvent)
+    user_updated_event = providers.Factory(UserUpdatedQueueEvent)
+    user_deleted_event = providers.Factory(UserDeletedQueueEvent)
 
     # Validators
     cliente_validator = providers.Singleton(ClienteValidator, cliente_repository)
@@ -182,7 +184,7 @@ class Container(containers.DeclarativeContainer):
         inventory_item_use_case=inventory_item_use_case,
         os_servico_repository=ordem_servico_servico_repository,
         os_item_repository=ordem_servico_inventory_item_repository,
-    )
+      
     vehicle_service = providers.Factory(
         VehicleService,
         use_case=vehicle_use_case,

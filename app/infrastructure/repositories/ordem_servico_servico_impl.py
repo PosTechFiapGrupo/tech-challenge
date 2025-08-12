@@ -68,7 +68,6 @@ class OrdemServicoServicoRepositoryImpl(OrdemServicoServicoRepository):
             result = await session.execute(stmt)
             await session.commit()
             return result.rowcount > 0
-
     async def calcular_tempo_medio_execucao(self) -> timedelta | None:
         async for session in self.database.get_session():
             query = select(
