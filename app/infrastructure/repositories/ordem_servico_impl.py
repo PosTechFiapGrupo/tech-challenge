@@ -4,8 +4,9 @@ from app.domain.repositories.ordem_servico import OrdemServicoRepository
 from app.infrastructure.models.ordem_servico import OrdemServicoModel
 from app.infrastructure.models.ordem_servico_servico import OrdemServicoServicoModel
 from app.domain.entities.status_ordem_servico import StatusOrdemServico
+from datetime import timedelta
 from app.infrastructure.database import database
-
+from sqlalchemy import select, func, text
 
 class OrdemServicoRepositoryImpl(OrdemServicoRepository):
     def __init__(self):
@@ -111,6 +112,31 @@ class OrdemServicoRepositoryImpl(OrdemServicoRepository):
                 entities.append(entity)
             return entities
 
+    async def get_by_status(self, status: StatusOrdemServico) -> list[OrdemServicoEntity]:
+        async for session in self.database.get_session():
+            result = await session.execute(
+                select(OrdemServicoModel).where(OrdemServicoModel.status == status.value)
+            )
+            models = result.scalars().all()
+            entities = []
+            for model in models:
+                # Buscar os servico_ids para cada modelo
+                servico_ids = await self._get_servico_ids_for_ordem(session, str(model.id))
+                
+                entity = OrdemServicoEntityFactory.create(
+                    id=str(model.id),
+                    cliente_id=str(model.cliente_id),
+                    vehicle_id=model.vehicle_id,
+                    servico_ids=servico_ids,
+                    mecanico_id=str(model.mecanico_id) if model.mecanico_id else None,
+                    atendente_id=str(model.atendente_id) if model.atendente_id else None,
+                    orcamento_id=str(model.orcamento_id) if model.orcamento_id else None,
+                    status=StatusOrdemServico(model.status),
+                    data_abertura=model.data_abertura,
+                )
+                entities.append(entity)
+            return entities
+
     async def update(self, ordem_servico: OrdemServicoEntity) -> OrdemServicoEntity:
         async for session in self.database.get_session():
             model = await session.get(OrdemServicoModel, ordem_servico.id)
@@ -139,3 +165,22 @@ class OrdemServicoRepositoryImpl(OrdemServicoRepository):
                 status=StatusOrdemServico(model.status),
                 data_abertura=model.data_abertura,
             )
+
+
+    async def calcular_tempo_medio_execucao(self) -> timedelta | None:
+        async for session in self.database.get_session():
+            query = select(
+                func.avg(
+                    func.timestampdiff(
+                        text('SECOND'),
+                        OrdemServicoModel.data_abertura,
+                        OrdemServicoModel.data_fechamento
+                    )
+                )
+            ).where(OrdemServicoModel.data_fechamento.isnot(None))
+
+            result = await session.execute(query)
+            tempo_medio_segundos = result.scalar()
+            if tempo_medio_segundos is not None:
+                return timedelta(seconds=float(tempo_medio_segundos))  # CONVERTE PARA float AQUI
+            return None
