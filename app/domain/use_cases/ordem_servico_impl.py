@@ -74,3 +74,6 @@ class OrdemServicoUseCasesImpl(OrdemServicoUseCases):
 
     async def get_all_ordens_servico(self) -> List[OrdemServicoEntity]:
         return await self.ordem_servico_repository.get_all()
+
+    async def get_ordens_servico_by_status(self, status: StatusOrdemServico) -> List[OrdemServicoEntity]:
+        return await self.ordem_servico_repository.get_by_status(status)

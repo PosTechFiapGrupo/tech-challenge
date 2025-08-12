@@ -1,0 +1,8 @@
+DATABASE_URL=mysql+aiomysql://tech_user:tech_password@mysql:3306/tech_challenge
+MYSQL_HOST=mysql
+MYSQL_PORT=3306
+MYSQL_DATABASE=tech_challenge
+MYSQL_USER=tech_user
+MYSQL_PASSWORD=tech_password
+MIGRATION_DATABASE_URL=mysql+aiomysql://tech_user:tech_password@mysql:3306/tech_challenge
+SECRET_KEY=a4f8b9c2d3e4f567890abcdef1234567890abcdef1234567890abcdef12345678

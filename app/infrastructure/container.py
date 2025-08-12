@@ -142,6 +142,10 @@ class Container(containers.DeclarativeContainer):
         VehicleUseCase, repository=vehicle_repository
     )
 
+    user_created_event = providers.Factory(UserCreatedQueueEvent)
+    user_updated_event = providers.Factory(UserUpdatedQueueEvent)
+    user_deleted_event = providers.Factory(UserDeletedQueueEvent)
+
     # Services
     password_service = providers.Singleton(
         PasswordService,
@@ -160,8 +164,7 @@ class Container(containers.DeclarativeContainer):
         servico_updated_event,
         servico_deleted_event,
     )
-
-        user_service = providers.Factory(
+    user_service = providers.Factory(
         UserService,
         user_repository,
         password_service,
@@ -181,6 +184,7 @@ class Container(containers.DeclarativeContainer):
         inventory_item_use_case=inventory_item_use_case,
         os_servico_repository=ordem_servico_servico_repository,
         os_item_repository=ordem_servico_inventory_item_repository,
+    )
       
     vehicle_service = providers.Factory(
         VehicleService,

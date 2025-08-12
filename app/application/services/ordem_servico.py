@@ -56,6 +56,9 @@ class OrdemServicoService:
     async def buscar_ordem_servico_por_id(self, id: str) -> OrdemServicoEntity | None:
         return await self.use_case.get_ordem_servico_by_id(id)
 
+    async def listar_ordens_servico_por_status(self, status: StatusOrdemServico) -> list[OrdemServicoEntity]:
+        return await self.use_case.get_ordens_servico_by_status(status)
+
     async def atualizar_ordem_servico(
         self, id: str, dados: OrdemServicoUpdate
     ) -> OrdemServicoEntity:
