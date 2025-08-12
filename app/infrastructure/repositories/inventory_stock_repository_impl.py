@@ -23,10 +23,11 @@ class InventoryStockRepositoryImpl(InventoryStockRepository):
     async def consume_for_os(self, os_id: str, items: List[Dict[str, int]]):
         # trava e valida
         for it in items:
-            row = (await self.db.execute(
+            result = await self.db.execute(
                 text("SELECT id, quantity FROM inventory_items WHERE id=:id FOR UPDATE"),
                 {"id": it["item_id"]}
-            )).first()
+            )
+            row = await result.first()  # <--- await aqui
             if not row:
                 raise ValueError(f"Item {it['item_id']} não encontrado")
             if row.quantity < it["quantity"]:

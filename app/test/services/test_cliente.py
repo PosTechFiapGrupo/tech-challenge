@@ -40,6 +40,7 @@ class TestClienteService:
             "1", "João Silva", "11999999999", "joao@email.com", "12345678901"
         )
 
+    # --- Testes existentes ---
     @pytest.mark.asyncio
     async def test_get_all_clientes(
         self, cliente_service, mock_repository, sample_cliente
@@ -81,3 +82,43 @@ class TestClienteService:
 
         with pytest.raises(ValueError):
             await cliente_service.create_cliente(cliente)
+
+    # --- Novos testes ---
+    @pytest.mark.asyncio
+    async def test_get_cliente_by_cpf(self, cliente_service, mock_repository, sample_cliente):
+        mock_repository.get_by_cpf.return_value = sample_cliente
+
+        result = await cliente_service.get_cliente_by_cpf("12345678901")
+
+        assert result == sample_cliente
+        mock_repository.get_by_cpf.assert_called_once_with("12345678901")
+
+    @pytest.mark.asyncio
+    async def test_update_cliente(self, cliente_service, mock_repository, mock_updated_event, sample_cliente):
+        mock_repository.update.return_value = sample_cliente
+
+        result = await cliente_service.update_cliente(sample_cliente)
+
+        assert result == sample_cliente
+        mock_repository.update.assert_called_once_with(sample_cliente)
+        mock_updated_event.send.assert_called_once_with(sample_cliente)
+
+    @pytest.mark.asyncio
+    async def test_delete_cliente_success(self, cliente_service, mock_repository, mock_deleted_event):
+        mock_repository.delete.return_value = True
+
+        result = await cliente_service.delete_cliente("1")
+
+        assert result is True
+        mock_repository.delete.assert_called_once_with("1")
+        mock_deleted_event.send.assert_called_once_with("1")
+
+    @pytest.mark.asyncio
+    async def test_delete_cliente_not_found(self, cliente_service, mock_repository, mock_deleted_event):
+        mock_repository.delete.return_value = False
+
+        result = await cliente_service.delete_cliente("1")
+
+        assert result is False
+        mock_repository.delete.assert_called_once_with("1")
+        mock_deleted_event.send.assert_not_called()
