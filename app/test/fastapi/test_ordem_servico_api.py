@@ -177,8 +177,9 @@ class TestOrdemServicoAPI:
         assert response.json()[0]["id"] == "os-1"
         assert response.json()[0]["status"] == "recebida"
     
-    def test_listar_ordens_servico_por_status_recebida(self, client, mock_ordem_servico_service):
-        """Test listing ordens de servico by status RECEBIDA"""
+    async def test_listar_ordens_servico_por_status_recebida(
+        self, async_client, override_services, mock_ordem_servico_service
+    ):
         mock_ordem_servico_service.listar_ordens_servico_por_status.return_value = [
             OrdemServicoOutput(
                 id="os-1",
@@ -195,25 +196,24 @@ class TestOrdemServicoAPI:
                 servico_ids=["s3"],
                 status=StatusOrdemServico.RECEBIDA,
                 data_abertura=datetime.fromisoformat("2025-08-06T00:00:00+00:00"),
-            )
+            ),
         ]
 
-        with client.app.container.ordem_servico_service.override(
-            mock_ordem_servico_service
-        ):
-            response = client.get("/ordens-servico/status/recebida")
+        response = await async_client.get("/ordens-servico/status/recebida")
 
         assert response.status_code == 200
-        assert isinstance(response.json(), list)
-        assert len(response.json()) == 2
-        assert response.json()[0]["id"] == "os-1"
-        assert response.json()[0]["status"] == "recebida"
-        assert response.json()[1]["id"] == "os-2"
-        assert response.json()[1]["status"] == "recebida"
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 2
+        assert data[0]["id"] == "os-1"
+        assert data[0]["status"] == "recebida"
+        assert data[1]["id"] == "os-2"
+        assert data[1]["status"] == "recebida"
         mock_ordem_servico_service.listar_ordens_servico_por_status.assert_called_once_with(StatusOrdemServico.RECEBIDA)
 
-    def test_listar_ordens_servico_por_status_em_execucao(self, client, mock_ordem_servico_service):
-        """Test listing ordens de servico by status EM_EXECUCAO"""
+    async def test_listar_ordens_servico_por_status_em_execucao(
+        self, async_client, override_services, mock_ordem_servico_service
+    ):
         mock_ordem_servico_service.listar_ordens_servico_por_status.return_value = [
             OrdemServicoOutput(
                 id="os-3",
@@ -225,34 +225,32 @@ class TestOrdemServicoAPI:
             )
         ]
 
-        with client.app.container.ordem_servico_service.override(
-            mock_ordem_servico_service
-        ):
-            response = client.get("/ordens-servico/status/em_execucao")
+        response = await async_client.get("/ordens-servico/status/em_execucao")
 
         assert response.status_code == 200
-        assert isinstance(response.json(), list)
-        assert len(response.json()) == 1
-        assert response.json()[0]["id"] == "os-3"
-        assert response.json()[0]["status"] == "em_execucao"
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 1
+        assert data[0]["id"] == "os-3"
+        assert data[0]["status"] == "em_execucao"
         mock_ordem_servico_service.listar_ordens_servico_por_status.assert_called_once_with(StatusOrdemServico.EM_EXECUCAO)
 
-    def test_listar_ordens_servico_por_status_finalizada(self, client, mock_ordem_servico_service):
-        """Test listing ordens de servico by status FINALIZADA"""
+    async def test_listar_ordens_servico_por_status_finalizada(
+        self, async_client, override_services, mock_ordem_servico_service
+    ):
         mock_ordem_servico_service.listar_ordens_servico_por_status.return_value = []
 
-        with client.app.container.ordem_servico_service.override(
-            mock_ordem_servico_service
-        ):
-            response = client.get("/ordens-servico/status/finalizada")
+        response = await async_client.get("/ordens-servico/status/finalizada")
 
         assert response.status_code == 200
-        assert isinstance(response.json(), list)
-        assert len(response.json()) == 0
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 0
         mock_ordem_servico_service.listar_ordens_servico_por_status.assert_called_once_with(StatusOrdemServico.FINALIZADA)
 
-    def test_listar_ordens_servico_por_status_cancelada(self, client, mock_ordem_servico_service):
-        """Test listing ordens de servico by status CANCELADA"""
+    async def test_listar_ordens_servico_por_status_cancelada(
+        self, async_client, override_services, mock_ordem_servico_service
+    ):
         mock_ordem_servico_service.listar_ordens_servico_por_status.return_value = [
             OrdemServicoOutput(
                 id="os-4",
@@ -264,30 +262,24 @@ class TestOrdemServicoAPI:
             )
         ]
 
-        with client.app.container.ordem_servico_service.override(
-            mock_ordem_servico_service
-        ):
-            response = client.get("/ordens-servico/status/cancelada")
+        response = await async_client.get("/ordens-servico/status/cancelada")
 
         assert response.status_code == 200
-        assert isinstance(response.json(), list)
-        assert len(response.json()) == 1
-        assert response.json()[0]["id"] == "os-4"
-        assert response.json()[0]["status"] == "cancelada"
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 1
+        assert data[0]["id"] == "os-4"
+        assert data[0]["status"] == "cancelada"
         mock_ordem_servico_service.listar_ordens_servico_por_status.assert_called_once_with(StatusOrdemServico.CANCELADA)
 
-    def test_listar_ordens_servico_por_status_invalido(self, client, mock_ordem_servico_service):
-        """Test listing ordens de servico with invalid status"""
-        with client.app.container.ordem_servico_service.override(
-            mock_ordem_servico_service
-        ):
-            response = client.get("/ordens-servico/status/invalid_status")
+    async def test_listar_ordens_servico_por_status_invalido(
+        self, async_client, override_services, mock_ordem_servico_service
+    ):
+        response = await async_client.get("/ordens-servico/status/invalid_status")
 
         assert response.status_code == 400
         assert "detail" in response.json()
-        # Verify the service method was not called for invalid status
         mock_ordem_servico_service.listar_ordens_servico_por_status.assert_not_called()
-
 
     async def test_buscar_ordem_servico_por_id_sucesso(
         self, async_client, override_services, mock_ordem_servico_service, sample_ordem_servico
