@@ -17,7 +17,7 @@ jobs:
 
     - name: Build and start containers
       run: |
-        docker-compose up -d --build
+        docker compose up -d --build
 
     - name: Wait for containers to be ready
       run: |
@@ -27,16 +27,16 @@ jobs:
 
     - name: Run migrations
       run: |
-        docker-compose exec -T app alembic upgrade head
+        docker compose exec -T app alembic upgrade head
 
     - name: Populate database
       run: |
-        docker-compose exec app python populate_db.py
+        docker compose exec app python populate_db.py
 
     - name: Run tests
       run: |
-        docker-compose exec -T app python -m pytest app/test/ -v
+        docker compose exec -T app python -m pytest app/test/ -v
 
     - name: Clean up
       if: always()
-      run: docker-compose down -v
+      run: docker compose down -v
