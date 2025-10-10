@@ -14,6 +14,7 @@ services:
       - MYSQL_USER=tech_user
       - MYSQL_PASSWORD=tech_password
       - MYSQL_ROOT_PASSWORD=root_password
+      - SECRET_KEY=${SECRET_KEY}
     depends_on:
       mysql:
         condition: service_healthy
