@@ -25,7 +25,7 @@ jobs:
       run: |
         echo "Waiting for containers to be healthy..."
         sleep 10
-        docker-compose ps
+        docker compose ps
 
     - name: Run migrations
       run: |
