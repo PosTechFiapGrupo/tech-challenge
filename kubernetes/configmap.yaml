@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tech-challenge-config
+  namespace: tech-challenge
+data:
+  DATABASE_URL: "mysql+aiomysql://user:password@host:port/db" # IMPORTANT: Replace with your actual database URL
