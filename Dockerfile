@@ -1,6 +1,7 @@
-FROM python:3.12-slim
+# ---- Build Stage ----
+FROM python:3.12-slim as builder
 
-# Instalar dependências do sistema necessárias para MySQL
+# Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     default-libmysqlclient-dev \
@@ -11,21 +12,41 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Define diretório de trabalho dentro do container
+# Set working directory
 WORKDIR /app
 
-# Copiar arquivos de dependências
+# Copy dependency files
 COPY requirements.txt pyproject.toml ./
-COPY alembic.ini ./
-COPY migrations ./migrations/
 
-# Instalar dependências Python
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies
+RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
-# Copiar código da aplicação
-COPY ./app ./app
 
+# ---- Final Stage ----
+FROM python:3.12-slim
+
+# Create a non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy installed dependencies from builder stage
+COPY --from=builder /wheels /wheels
+
+# Install dependencies from wheels
+RUN pip install --no-cache /wheels/*
+
+# Copy application code
+COPY --chown=appuser:appuser ./app ./app
+COPY --chown=appuser:appuser alembic.ini .
+COPY --chown=appuser:appuser migrations ./migrations/
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
 EXPOSE 8000
 
-# Comando para iniciar a aplicação
-CMD ["uvicorn", "app.main:application", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+# Start the application with gunicorn
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8000", "app.main:application"]
