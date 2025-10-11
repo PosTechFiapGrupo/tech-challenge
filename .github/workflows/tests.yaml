@@ -2,7 +2,8 @@ name: Run Tests
 
 on:
   pull_request:
-    branches: [ fase2]
+    branches: [fase1, fase2, fase3, fase4, fase5]
+  workflow_dispatch:
 
 jobs:
   test:
