@@ -5,6 +5,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    env_file:
+      - .env-example
+      - .env
     environment:
       - DATABASE_URL=mysql+aiomysql://tech_user:tech_password@mysql:3306/tech_challenge
       - MIGRATION_DATABASE_URL=mysql+pymysql://tech_user:tech_password@mysql:3306/tech_challenge
