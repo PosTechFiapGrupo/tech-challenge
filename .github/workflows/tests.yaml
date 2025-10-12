@@ -1,47 +1,148 @@
-name: Run Tests
+name: CI – Build & Integration Tests
 
 on:
   pull_request:
     branches: [fase1, fase2, fase3, fase4, fase5]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write  # para publicar no GHCR
+
 jobs:
-  test:
+  build_image:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ username_gh }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: Compute image tag
+        id: meta
+        run: |
+          IMAGE="ghcr.io/${{ github.repository }}:${{ github.sha }}"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & Push (GHCR)
+        run: |
+          docker build -t "${{ steps.meta.outputs.image }}" .
+          docker push "${{ steps.meta.outputs.image }}"
+
+  integration_tests:
+    runs-on: ubuntu-latest
+    needs: build_image
+    env:
+      # não sensíveis (defaults)
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: tech_challenge
+      MYSQL_USER: tech_user
+      APP_PORT: 8000
+
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+
+      APP_IMAGE: ${{ needs.build_image.outputs.image }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Create .env file
-      run: |
-        cp env-example .env
+      - name: Mask secrets
+        run: |
+          [ -n "${SECRET_KEY}" ] && echo "::add-mask::${SECRET_KEY}"
+          [ -n "${MYSQL_PASSWORD}" ] && echo "::add-mask::${MYSQL_PASSWORD}"
+          [ -n "${MYSQL_ROOT_PASSWORD}" ] && echo "::add-mask::${MYSQL_ROOT_PASSWORD}"
 
-    - name: Build and start containers
-      run: |
-        docker compose up -d --build
+      - name: Create .env.ci
+        run: |
+          cat > .env.ci <<EOF
+          SECRET_KEY=${SECRET_KEY}
+          MYSQL_PASSWORD=${MYSQL_PASSWORD}
+          MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+          MYSQL_HOST=${MYSQL_HOST}
+          MYSQL_PORT=${MYSQL_PORT}
+          MYSQL_DATABASE=${MYSQL_DATABASE}
+          MYSQL_USER=${MYSQL_USER}
+          APP_PORT=${APP_PORT}
+          APP_IMAGE=${APP_IMAGE}
+          DATABASE_URL=mysql+aiomysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}
+          MIGRATION_DATABASE_URL=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}
+          EOF
 
-    - name: Wait for containers to be ready
-      run: |
-        echo "Waiting for containers to be healthy..."
-        sleep 10
-        docker compose ps
+      # ===== DB UP =====
+      - name: Start MySQL
+        run: docker compose --env-file .env.ci up -d mysql
 
-    - name: Run migrations
-      run: |
-        docker compose exec -T app alembic upgrade head
+      - name: Show Compose status (after DB up)
+        run: docker compose --env-file .env.ci ps
 
-    - name: Populate database
-      run: |
-        docker compose exec app python populate_db.py
+      - name: Wait for MySQL to be healthy
+        run: |
+          ATTEMPTS=0
+          until [ "$(docker inspect --format='{{json .State.Health.Status}}' $(docker compose ps -q mysql) | tr -d '"')" = "healthy" ]; do
+            ATTEMPTS=$((ATTEMPTS+1))
+            if [ $ATTEMPTS -gt 30 ]; then
+              echo "MySQL not healthy in time"
+              docker compose --env-file .env.ci logs mysql || true
+              exit 1
+            fi
+            sleep 6
+          done
 
-    - name: Run tests
-      run: |
-        docker compose exec -T app python -m pytest app/test/ -v
+      - name: Pull app image (from GHCR)
+        run: docker pull "${APP_IMAGE}"
 
-    - name: Clean up
-      if: always()
-      run: docker compose down -v
+      - name: Start App (detached)
+        run: docker compose --env-file .env.ci up -d app
+
+      - name: Show Compose status (after App up)
+        run: docker compose --env-file .env.ci ps
+
+      - name: Alembic upgrade head
+        run: docker compose --env-file .env.ci run --rm app alembic upgrade head
+
+      - name: Populate database
+        run: docker compose --env-file .env.ci run --rm app python populate_db.py
+
+      - name: Run tests (pytest)
+        run: docker compose --env-file .env.ci run --rm app python -m pytest app/test/ -v --disable-warnings
+
+      - name: Dump Compose status
+        if: always()
+        run: docker compose --env-file .env.ci ps
+
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          mkdir -p artifacts
+          docker compose --env-file .env.ci logs --no-color > artifacts/compose-logs.txt
+
+      - name: Upload logs artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compose-logs
+          path: artifacts/compose-logs.txt
+
+      # ===== CLEANUP =====
+      - name: Clean up
+        if: always()
+        run: |
+          docker compose --env-file .env.ci down -v
+          rm -f .env.ci
