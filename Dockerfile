@@ -17,6 +17,9 @@ WORKDIR /app
 
 # Copy dependency files
 COPY requirements.txt pyproject.toml ./
+COPY alembic.ini ./
+COPY migrations ./migrations/
+COPY populate_db.py ./
 
 # Install dependencies
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt

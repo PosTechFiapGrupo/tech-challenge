@@ -109,3 +109,62 @@ populate-db:
 # Ver qual comando docker-compose está sendo usado
 print-docker-compose:
 	@echo "Usando comando Docker Compose: $(DOCKER_COMPOSE)"
+APP_NAME := tech-challenge-app
+IMAGE_TAG := latest
+IMAGE_NAME := $(APP_NAME):$(IMAGE_TAG)
+INFRA_DIR := infra
+
+# ================================================
+# DOCKER
+# ================================================
+
+docker-build-image:
+	docker build -t $(IMAGE_NAME) .
+
+docker-clean:
+	docker system prune -af --volumes
+
+# ================================================
+# TERRAFORM
+# ===========
+
+terraform-init:
+	cd $(INFRA_DIR) && terraform init
+
+terraform-plan:
+	cd $(INFRA_DIR) && terraform plan
+
+terraform-apply:
+	cd $(INFRA_DIR) && terraform apply -auto-approve
+
+terraform-destroy:
+	cd $(INFRA_DIR) && terraform destroy -auto-approve
+
+terraform-output:
+	cd $(INFRA_DIR) && terraform output
+
+terraform-validate:
+	cd $(INFRA_DIR) && terraform validate
+
+# ================================================
+# KUBERNETES
+# ================================================
+
+kube-get:
+	kubectl get pods,svc,jobs,hpa
+
+kube-logs:
+	kubectl logs deploy/$(APP_NAME) --tail=100
+
+kube-describe:
+	kubectl describe deploy/$(APP_NAME)
+
+# ================================================
+# WORKFLOW COMPLETO
+# ================================================
+
+# Executa todo o fluxo: build + terraform init/apply + exibe status do cluster
+terraform-run: docker-build-image terraform-init terraform-apply kube-get
+
+# Destrói toda a infra e limpa imagens
+terraform-clean: terraform-destroy docker-clean
