@@ -18,6 +18,7 @@ WORKDIR /app
 COPY requirements.txt pyproject.toml ./
 COPY alembic.ini ./
 COPY migrations ./migrations/
+COPY populate_db.py ./
 
 # Instalar dependências Python
 RUN pip install --no-cache-dir -r requirements.txt
