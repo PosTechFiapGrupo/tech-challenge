@@ -109,6 +109,7 @@ populate-db:
 # Ver qual comando docker-compose está sendo usado
 print-docker-compose:
 	@echo "Usando comando Docker Compose: $(DOCKER_COMPOSE)"
+
 APP_NAME := tech-challenge-app
 IMAGE_TAG := latest
 IMAGE_NAME := $(APP_NAME):$(IMAGE_TAG)
