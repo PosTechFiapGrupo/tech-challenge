@@ -207,3 +207,35 @@ async def adicionar_item_a_ordem_servico(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/{id}/aprovar-orcamento", response_model=OrdemServicoOutput, dependencies=[Depends(role_required("admin", "atendente"))])
+@inject
+async def aprovar_orcamento(
+    id: str,
+    service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
+):
+    """Aprova o orçamento e muda a OS para 'em_execucao'."""
+    try:
+        updated = await service.aprovar_orcamento(id)
+        return OrdemServicoOutput.model_validate(updated).model_dump()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Erro ao aprovar orçamento: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Erro interno ao aprovar orçamento.")
+
+@router.put("/{id}/recusar-orcamento", response_model=OrdemServicoOutput, dependencies=[Depends(role_required("admin", "atendente"))],)
+@inject
+async def recusar_orcamento(
+    id: str,
+    service: OrdemServicoService = Depends(Provide[Container.ordem_servico_service]),
+):
+    """Recusa o orçamento e muda a OS para 'cancelada'."""
+    try:
+        updated = await service.recusar_orcamento(id)
+        return OrdemServicoOutput.model_validate(updated).model_dump()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Erro ao recusar orçamento: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Erro interno ao recusar orçamento.")
