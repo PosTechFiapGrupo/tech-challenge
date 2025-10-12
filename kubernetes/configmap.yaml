@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tech-challenge-config
+  namespace: tech-challenge
+data:
+  APP_ENV: "production"
+  LOG_LEVEL: "info"
+  PORT: "8000"
+  # IMPORTANT:
+  # - Do NOT put sensitive values here. Use Secrets for:
+  #   - SECRET_KEY (JWT)
+  #   - DATABASE_URL / MIGRATION_DATABASE_URL
+  #   - Any external service tokens/credentials
+  # - Secrets are synced from AWS Secrets Manager via ExternalSecrets

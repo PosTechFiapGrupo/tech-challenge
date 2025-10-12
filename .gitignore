@@ -162,9 +162,16 @@ cython_debug/
 # MacOS
 .DS_Store
 
+# gemini
+.gemini/
+.geminiignore
+
 # VsCode
 .vscode
 
 #Sonar
 .scannerwork/
 sonar-project.properties
+
+# Kubernets secrets
+kubernetes/secret.yaml.template
