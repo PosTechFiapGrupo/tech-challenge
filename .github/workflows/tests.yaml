@@ -36,7 +36,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ vars.USERNAME_GH || github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GH_TOKEN }}
 
       - name: Compute lowercase image
         id: meta
