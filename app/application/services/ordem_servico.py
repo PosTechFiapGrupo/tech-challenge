@@ -51,7 +51,28 @@ class OrdemServicoService:
         return await self.use_case.create_ordem_servico(ordem_servico)
 
     async def listar_ordens_servico(self) -> list[OrdemServicoEntity]:
-        return await self.use_case.get_all_ordens_servico()
+        os_list = await self.use_case.get_all_ordens_servico()
+        
+        # Filtrar OS finalizadas ou canceladas (exclusão lógica)
+        os_list = [
+            os for os in os_list 
+            if os.status not in (StatusOrdemServico.FINALIZADA, StatusOrdemServico.CANCELADA)
+        ]
+
+        # Definir prioridade de ordenação por status
+        status_priority = {
+            StatusOrdemServico.EM_EXECUCAO: 1,
+            StatusOrdemServico.AGUARDANDO_APROVACAO: 2,
+            StatusOrdemServico.EM_DIAGNOSTICO: 3,
+            StatusOrdemServico.RECEBIDA: 4
+        }
+
+        # Ordenar primeiro pelo status (prioridade), depois pela data mais antiga
+        os_list.sort(
+            key=lambda os: (status_priority.get(os.status, 99), os.data_abertura)
+        )
+
+        return os_list
 
     async def buscar_ordem_servico_por_id(self, id: str) -> OrdemServicoEntity | None:
         return await self.use_case.get_ordem_servico_by_id(id)
@@ -162,3 +183,45 @@ class OrdemServicoService:
         )
         
         return await self.os_item_repository.adicionar_item_a_os(relacao)
+
+    async def aprovar_orcamento(self, ordem_servico_id: str) -> OrdemServicoEntity:
+        """Aprova o orçamento e move a OS para execução."""
+        os_entity = await self.use_case.get_ordem_servico_by_id(ordem_servico_id)
+        if not os_entity:
+            raise ValueError("Ordem de serviço não encontrada")
+
+        # Verifica se está no status correto
+        if os_entity.status != StatusOrdemServico.AGUARDANDO_APROVACAO:
+            raise ValueError(
+                f"A OS precisa estar em 'aguardando_aprovacao' para ser aprovada "
+                f"(atual: {os_entity.status})."
+            )
+
+        # Valida transição de status
+        self.validator.validate_status_transition(
+            os_entity.status, StatusOrdemServico.EM_EXECUCAO
+        )
+
+        # Atualiza status
+        os_entity.status = StatusOrdemServico.EM_EXECUCAO
+
+        # Persiste a atualização
+        return await self.use_case.update_ordem_servico(os_entity)
+
+
+    async def recusar_orcamento(self, ordem_servico_id: str) -> OrdemServicoEntity:
+        os_entity = await self.use_case.get_ordem_servico_by_id(ordem_servico_id)
+        if not os_entity:
+            raise ValueError("Ordem de serviço não encontrada")
+
+        if os_entity.status != StatusOrdemServico.AGUARDANDO_APROVACAO:
+            raise ValueError(
+                f"A OS precisa estar em 'aguardando_aprovacao' para ser recusada (atual: {os_entity.status})."
+            )
+
+        os_entity.status = StatusOrdemServico.CANCELADA
+        if hasattr(os_entity, "motivo_cancelamento"):
+            os_entity.motivo_cancelamento = "Orçamento recusado pelo cliente"
+
+        updated = await self.use_case.update_ordem_servico(os_entity)
+        return updated
