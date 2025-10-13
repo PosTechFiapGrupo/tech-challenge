@@ -1,7 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tech-challenge-service
+  namespace: tech-challenge
+  labels:
+    app: tech-challenge
 spec:
   selector:
-    app: tech-challenge  
+    app: tech-challenge       
   ports:
-    - port: 8000
-      targetPort: 8000
+    - name: http
+      protocol: TCP
+      port: 8000                
+      targetPort: 8000        
   type: ClusterIP
