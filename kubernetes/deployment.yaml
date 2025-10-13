@@ -13,11 +13,21 @@ spec:
       labels:
         app: tech-challenge
     spec:
-      # SecurityContext do POD (ok aqui)
+      # Contexto de segurança do POD
       securityContext:
         runAsUser: 1001
         runAsGroup: 1001
+        runAsNonRoot: true
         fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Volume efêmero e seguro
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
 
       containers:
         - name: tech-challenge
@@ -29,6 +39,14 @@ spec:
                 name: tech-challenge-config
             - secretRef:
                 name: tech-challenge-secret
+          env:
+            - name: TMPDIR
+              value: /tmp
+            - name: GUNICORN_CMD_ARGS
+              value: "--worker-tmp-dir /tmp"
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
