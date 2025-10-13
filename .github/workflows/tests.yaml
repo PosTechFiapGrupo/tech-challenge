@@ -81,6 +81,34 @@ jobs:
 
       - name: Carregar imagem no cluster KIND
         run: kind load docker-image "${APP_IMAGE}" --name tech-cluster
+      
+      - name: Atualizar imagem no deployment.yaml
+        run: |
+          echo "Atualizando imagem do Deployment para ${APP_IMAGE}"
+          sed -i "s|image: .*tech-challenge:.*|image: ${APP_IMAGE}|" kubernetes/deployment.yaml
+          echo "Resultado:"
+          grep -n "image:" kubernetes/deployment.yaml
+
+      - name: Criar Secret no Kubernetes
+        env:
+          NS: tech-challenge
+          # Segredos vindos do GitHub (Settings → Secrets and variables → Actions)
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          # Valores não sensíveis (podem ser Variables ou defaults)
+          MYSQL_USER: ${{ vars.MYSQL_USER || 'tech_user' }}
+          MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE || 'tech_challenge' }}
+        run: |
+          # garante que o namespace exista
+          kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f -
+
+          # cria/atualiza o Secret "tech-challenge-secret"
+          kubectl -n "$NS" create secret generic tech-challenge-secret \
+            --from-literal=SECRET_KEY="$SECRET_KEY" \
+            --from-literal=MYSQL_PASSWORD="$MYSQL_PASSWORD" \
+            --from-literal=DATABASE_URL="mysql+aiomysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}" \
+            --from-literal=MIGRATION_DATABASE_URL="mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}" \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Criar namespace
         run: kubectl apply -f kubernetes/namespace.yaml
