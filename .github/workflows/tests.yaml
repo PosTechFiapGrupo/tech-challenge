@@ -75,7 +75,7 @@ jobs:
           registry: ghcr.io
           username: ${{ vars.USERNAME_GH || github.actor }}
           password: ${{ secrets.GH_TOKEN }}
-          
+
       - name: Pull app image (GHCR -> local)
         run: docker pull "${APP_IMAGE}"
 
@@ -83,12 +83,12 @@ jobs:
         run: kind load docker-image "${APP_IMAGE}" --name tech-cluster
 
       - name: Criar namespace
-        run: kubectl apply -f k8s/namespace.yaml
+        run: kubectl apply -f kubernetes/namespace.yaml
 
       - name: Criar Secrets e ConfigMap
         run: |
-          kubectl -n ${K8S_NAMESPACE} apply -f k8s/configmap.yaml
-          kubectl -n ${K8S_NAMESPACE} apply -f k8s/externalsecret.yaml || true
+          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/configmap.yaml
+          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/externalsecret.yaml || true
 
       - name: Injetar imagem no deployment.yaml
         run: |
@@ -96,13 +96,13 @@ jobs:
           awk -v img="${APP_IMAGE}" -v cname="${CONTAINER_NAME}" '
             $0 ~ "name:[[:space:]]*"cname {
               print; getline; sub(/image:.*/, "image: " img); print; next
-            }1' k8s/deployment.yaml > k8s/tmp && mv k8s/tmp k8s/deployment.yaml
-          grep "image:" k8s/deployment.yaml
+            }1' k8s/deployment.yaml > kubernetes/tmp && mv kubernetes/tmp kubernetes/deployment.yaml
+          grep "image:" kubernetes/deployment.yaml
 
       - name: Aplicar manifests
         run: |
-          kubectl -n ${K8S_NAMESPACE} apply -f k8s/deployment.yaml
-          kubectl -n ${K8S_NAMESPACE} apply -f k8s/hpa.yaml
+          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/deployment.yaml
+          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/hpa.yaml
 
       - name: Aguardar rollout
         run: kubectl -n ${K8S_NAMESPACE} rollout status deployment/${DEPLOYMENT_NAME} --timeout=180s
