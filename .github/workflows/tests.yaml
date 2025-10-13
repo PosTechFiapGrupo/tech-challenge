@@ -132,7 +132,8 @@ jobs:
       - name: Smoke test via Pod curl
         run: |
           kubectl -n ${K8S_NAMESPACE} run curl --image=curlimages/curl:8.10.1 -i --restart=Never --rm \
-            -- curl -sS http://${DEPLOYMENT_NAME}.${K8S_NAMESPACE}.svc.cluster.local:${APP_PORT}/health || exit 1
+            -- curl -sS http://tech-challenge-service.${K8S_NAMESPACE}.svc.cluster.local:${APP_PORT}/health || exit 1
+
 
       - name: Dump recursos (debug)
         if: failure()
