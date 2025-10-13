@@ -97,6 +97,7 @@ Developer → Docker Build → Terraform → Kubernetes → Application
 - **FastAPI** - Framework web moderno e rápido
 - **SQLAlchemy** - ORM para Python com suporte async
 - **MySQL 8.0** - Banco de dados relacional
+- **Alembic** - Migrations para SQLAlchemy
 - **Docker & Docker Compose** - Containerização
 - **Kubernetes** - Orquestração de containers
 - **Terraform** - Infraestrutura como código
@@ -104,6 +105,7 @@ Developer → Docker Build → Terraform → Kubernetes → Application
 ## 📋 Pré-requisitos
 
 - Docker e Docker Compose
+- Make (opcional, para usar os comandos do Makefile)
 - kubectl (para deploy em Kubernetes)
 - Terraform (para provisionamento de infraestrutura)
 
