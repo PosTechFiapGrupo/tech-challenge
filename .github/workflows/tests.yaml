@@ -31,8 +31,9 @@ jobs:
       - name: Compute image tag
         id: meta
         run: |
-          IMAGE="ghcr.io/${{ github.repository }}:${{ github.sha }}"
-          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          REPO_LC=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${REPO_LC}:${{ github.sha }}"
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
 
       - name: Build & Push (GHCR)
         run: |
