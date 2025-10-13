@@ -87,23 +87,18 @@ jobs:
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
-      - name: Atualizar imagem com yq
+      - name: Atualizar apenas a imagem no deployment.yaml
         env:
           CONTAINER_NAME: tech-challenge
         run: |
-          yq -i '.spec.template.spec.containers[] |= (select(.name == env(CONTAINER_NAME)) .image = env(APP_IMAGE))' kubernetes/deployment.yaml
-          echo "Resultado:"
-          yq '.spec.template.spec.containers[] | {name, image}' kubernetes/deployment.yaml
-          # Guarda de segurança
-          yq -e ".spec.template.spec.containers[] | select(.name==env(CONTAINER_NAME)) | select(.image==env(APP_IMAGE))" kubernetes/deployment.yaml > /dev/null
+          yq -i '(.spec.template.spec.containers[] | select(.name == env(CONTAINER_NAME))).image = env(APP_IMAGE)' kubernetes/deployment.yaml
+
 
       - name: Criar Secret no Kubernetes
         env:
           NS: tech-challenge
-          # Segredos vindos do GitHub (Settings → Secrets and variables → Actions)
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          # Valores não sensíveis (podem ser Variables ou defaults)
           MYSQL_USER: ${{ vars.MYSQL_USER || 'tech_user' }}
           MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE || 'tech_challenge' }}
         run: |
@@ -125,15 +120,6 @@ jobs:
         run: |
           kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/configmap.yaml
           kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/externalsecret.yaml || true
-
-      - name: Injetar imagem no deployment.yaml
-        run: |
-          echo "Atualizando imagem para ${APP_IMAGE}"
-          awk -v img="${APP_IMAGE}" -v cname="${CONTAINER_NAME}" '
-            $0 ~ "name:[[:space:]]*"cname {
-              print; getline; sub(/image:.*/, "image: " img); print; next
-            }1' k8s/deployment.yaml > kubernetes/tmp && mv kubernetes/tmp kubernetes/deployment.yaml
-          grep "image:" kubernetes/deployment.yaml
 
       - name: Aplicar manifests
         run: |
