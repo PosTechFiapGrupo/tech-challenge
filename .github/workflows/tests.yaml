@@ -125,9 +125,20 @@ jobs:
         run: |
           kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/deployment.yaml
           kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/hpa.yaml
+     
+      - name: Aplicar Service
+        run: |
+          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/service.yaml
+          kubectl -n ${K8S_NAMESPACE} get svc tech-challenge-service
 
       - name: Aguardar rollout
         run: kubectl -n ${K8S_NAMESPACE} rollout status deployment/${DEPLOYMENT_NAME} --timeout=180s
+
+      - name: Aplicar Service
+        run: |
+          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/service.yaml
+          kubectl -n ${K8S_NAMESPACE} get svc tech-challenge-service
+
 
       - name: Smoke test via Pod curl
         run: |
