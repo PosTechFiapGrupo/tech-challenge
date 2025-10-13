@@ -3,8 +3,6 @@ kind: Deployment
 metadata:
   name: tech-challenge-deployment
   namespace: tech-challenge
-  labels:
-    app: tech-challenge
 spec:
   replicas: 2
   selector:
@@ -15,53 +13,43 @@ spec:
       labels:
         app: tech-challenge
     spec:
-      containers:
-      - name: tech-challenge
-        image: your-docker-registry/tech-challenge:latest # IMPORTANT: Replace with your actual image path
-        ports:
-        - containerPort: 8000
-        envFrom:
-        - configMapRef:
-            name: tech-challenge-config
-        - secretRef:
-            name: tech-challenge-secret
-        resources:
-          requests:
-            cpu: "250m"
-            memory: "256Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 15
-          periodSeconds: 20
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 15
-          periodSeconds: 20
+      # SecurityContext do POD (ok aqui)
       securityContext:
         runAsUser: 1001
         runAsGroup: 1001
         fsGroup: 1001
-        readOnlyRootFilesystem: true
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: tech-challenge-service
-  namespace: tech-challenge
-  labels:
-    app: tech-challenge
-spec:
-  selector:
-    app: tech-challenge
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8000
-  type: ClusterIP
+
+      containers:
+        - name: tech-challenge
+          image: your-docker-registry/tech-challenge:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: tech-challenge-config
+            - secretRef:
+                name: tech-challenge-secret
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20

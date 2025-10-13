@@ -82,12 +82,20 @@ jobs:
       - name: Carregar imagem no cluster KIND
         run: kind load docker-image "${APP_IMAGE}" --name tech-cluster
       
-      - name: Atualizar imagem no deployment.yaml
+      - name: Instalar yq
         run: |
-          echo "Atualizando imagem do Deployment para ${APP_IMAGE}"
-          sed -i "s|image: .*tech-challenge:.*|image: ${APP_IMAGE}|" kubernetes/deployment.yaml
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Atualizar imagem com yq
+        env:
+          CONTAINER_NAME: tech-challenge
+        run: |
+          yq -i '.spec.template.spec.containers[] |= (select(.name == env(CONTAINER_NAME)) .image = env(APP_IMAGE))' kubernetes/deployment.yaml
           echo "Resultado:"
-          grep -n "image:" kubernetes/deployment.yaml
+          yq '.spec.template.spec.containers[] | {name, image}' kubernetes/deployment.yaml
+          # Guarda de segurança
+          yq -e ".spec.template.spec.containers[] | select(.name==env(CONTAINER_NAME)) | select(.image==env(APP_IMAGE))" kubernetes/deployment.yaml > /dev/null
 
       - name: Criar Secret no Kubernetes
         env:
