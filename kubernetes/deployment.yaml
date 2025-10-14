@@ -3,8 +3,6 @@ kind: Deployment
 metadata:
   name: tech-challenge-deployment
   namespace: tech-challenge
-  labels:
-    app: tech-challenge
 spec:
   replicas: 2
   selector:
@@ -15,53 +13,61 @@ spec:
       labels:
         app: tech-challenge
     spec:
-      containers:
-      - name: tech-challenge
-        image: your-docker-registry/tech-challenge:latest # IMPORTANT: Replace with your actual image path
-        ports:
-        - containerPort: 8000
-        envFrom:
-        - configMapRef:
-            name: tech-challenge-config
-        - secretRef:
-            name: tech-challenge-secret
-        resources:
-          requests:
-            cpu: "250m"
-            memory: "256Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 15
-          periodSeconds: 20
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 15
-          periodSeconds: 20
+      # Contexto de segurança do POD
       securityContext:
         runAsUser: 1001
         runAsGroup: 1001
+        runAsNonRoot: true
         fsGroup: 1001
-        readOnlyRootFilesystem: true
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: tech-challenge-service
-  namespace: tech-challenge
-  labels:
-    app: tech-challenge
-spec:
-  selector:
-    app: tech-challenge
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8000
-  type: ClusterIP
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Volume efêmero e seguro
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+
+      containers:
+        - name: tech-challenge
+          image: your-docker-registry/tech-challenge:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: tech-challenge-config
+            - secretRef:
+                name: tech-challenge-secret
+          env:
+            - name: TMPDIR
+              value: /tmp
+            - name: GUNICORN_CMD_ARGS
+              value: "--worker-tmp-dir /tmp"
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
