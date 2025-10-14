@@ -82,13 +82,14 @@ Esta fase do Tech Challenge tem como objetivo implementar uma API completa para 
 ### Fluxo de Deploy
 
 ```
-Developer → Docker Build → Terraform → Kubernetes → Application
-     │            │           │            │            │
-     │            │           │            │            └─ Health Checks
-     │            │           │            └─ Pod Deployment
-     │            │           └─ Infrastructure Provisioning
-     │            └─ Container Image
-     └─ Code Changes
+Developer → GitHub Push → GitHub Actions Pipeline → GHCR Registry → Kubernetes → Application
+     │            │              │                    │              │            │
+     │            │              ├─ Build Image       │              │            └─ Health Checks
+     │            │              ├─ Run Tests         │              │            
+     │            │              ├─ Push to GHCR ────┘              │            
+     │            │              └─ Deploy K8s ──────────────────────┘            
+     │            └─ Trigger CI/CD                                                 
+     └─ Code Changes                                                               
 ```
 ## ⚙️ Parâmetros e Segredos da Pipeline CI/CD
 
