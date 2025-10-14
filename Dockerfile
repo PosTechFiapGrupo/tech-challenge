@@ -44,6 +44,7 @@ RUN pip install --no-cache /wheels/*
 COPY --chown=appuser:appuser ./app ./app
 COPY --chown=appuser:appuser alembic.ini .
 COPY --chown=appuser:appuser migrations ./migrations/
+COPY --chown=appuser:appuser populate_db.py .
 
 # Switch to non-root user
 USER appuser
