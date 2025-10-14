@@ -105,7 +105,7 @@ A pipeline CI/CD utiliza **GitHub Actions** e depende de algumas variáveis de a
 ### 🌍 Variáveis Opcionais (Settings → Variables → Actions)
 | Nome | Exemplo | Descrição |
 |------|----------|------------|
-| `USERNAME_GH` | `rian-ramos` | Usuário usado no login do GHCR |
+| `USERNAME_GH` | `Rian292` | Usuário usado no login do GHCR |
 | `MYSQL_USER` | `tech_user` | Usuário do banco |
 | `MYSQL_DATABASE` | `tech_challenge` | Banco de dados padrão |
 | `K8S_NAMESPACE` | `tech-challenge` | Namespace Kubernetes |
