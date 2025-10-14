@@ -11,7 +11,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "app_hpa" {
     }
 
     min_replicas = 1
-    max_replicas = 3
+    max_replicas = 5
 
     metric {
       type = "Resource"
@@ -19,7 +19,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "app_hpa" {
         name = "cpu"
         target {
           type                = "Utilization"
-          average_utilization = 50
+          average_utilization = 10
         }
       }
     }
