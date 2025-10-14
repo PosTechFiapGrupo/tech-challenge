@@ -199,7 +199,7 @@ jobs:
         env:
           CONTAINER_NAME: tech-challenge
         run: |
-          yq -i '(.spec.template.spec.containers[] | select(.name == env(CONTAINER_NAME))).image = env(APP_IMAGE)' kubernetes/deployment.yaml
+          yq -i '(.spec.template.spec.containers[] | select(.name == env(CONTAINER_NAME))).image = env(APP_IMAGE)' k8s/deployment.yaml
 
       - name: Criar Secret no Kubernetes
         env:
@@ -218,18 +218,18 @@ jobs:
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Criar namespace (manifesto opcional)
-        run: kubectl apply -f kubernetes/namespace.yaml || true
+        run: kubectl apply -f k8s/namespace.yaml || true
 
       - name: Criar Secrets e ConfigMap (manifests opcionais)
         run: |
-          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/configmap.yaml || true
-          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/externalsecret.yaml || true
+          kubectl -n ${K8S_NAMESPACE} apply -f k8s/configmap.yaml || true
+          kubectl -n ${K8S_NAMESPACE} apply -f k8s/externalsecret.yaml || true
 
       - name: Aplicar manifests
         run: |
-          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/deployment.yaml
-          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/hpa.yaml || true
-          kubectl -n ${K8S_NAMESPACE} apply -f kubernetes/service.yaml
+          kubectl -n ${K8S_NAMESPACE} apply -f k8s/deployment.yaml
+          kubectl -n ${K8S_NAMESPACE} apply -f k8s/hpa.yaml || true
+          kubectl -n ${K8S_NAMESPACE} apply -f k8s/service.yaml
 
       - name: Aguardar rollout
         run: kubectl -n ${K8S_NAMESPACE} rollout status deployment/${DEPLOYMENT_NAME} --timeout=180s

@@ -82,13 +82,14 @@ Esta fase do Tech Challenge tem como objetivo implementar uma API completa para 
 ### Fluxo de Deploy
 
 ```
-Developer → Docker Build → Terraform → Kubernetes → Application
-     │            │           │            │            │
-     │            │           │            │            └─ Health Checks
-     │            │           │            └─ Pod Deployment
-     │            │           └─ Infrastructure Provisioning
-     │            └─ Container Image
-     └─ Code Changes
+Developer → GitHub Push → GitHub Actions Pipeline → GHCR Registry → Kubernetes → Application
+     │            │              │                    │              │            │
+     │            │              ├─ Build Image       │              │            └─ Health Checks
+     │            │              ├─ Run Tests         │              │            
+     │            │              ├─ Push to GHCR ────┘              │            
+     │            │              └─ Deploy K8s ──────────────────────┘            
+     │            └─ Trigger CI/CD                                                 
+     └─ Code Changes                                                               
 ```
 ## ⚙️ Parâmetros e Segredos da Pipeline CI/CD
 
@@ -192,7 +193,16 @@ kubectl cluster-info
 kubectl config use-context docker-desktop
 ```
 
-### 3. Aplicar configurações manualmente
+### 3. Buildar a aplicação
+```bash
+make build-up
+```
+OU
+
+```bash
+docker-compose up -d --build
+```
+### 4. Aplicar configurações manualmente
 
 ```bash
 # Aplicar todos os manifestos Kubernetes
@@ -205,7 +215,7 @@ kubectl get pods -n tech-challenge
 kubectl get services -n tech-challenge
 ```
 
-### 4. Acessar aplicação
+### 5. Acessar aplicação
 
 ```bash
 # Obter URL do serviço
@@ -231,14 +241,40 @@ cd tech-challenge
 cp env-example .env
 ```
 
-### 3. Provisionar infraestrutura (execução completa)
+### 3. Criar o cluster e configurar contexto do kubectl
+
+```bash
+#Escolha uma das opções abaixo para criar o cluster local:
+# Criar o cluster com Kind
+kind create cluster --name docker-desktop
+
+# Criar o cluster com Minikube
+minikube start -p docker-desktop
+
+# Se usar o Docker Desktop, o cluster já estará disponível
+```
+```bash
+# Descubra o nome do seu usuário do cluster
+kubectl config get-contexts
+```
+
+Use o nome do usuário listado na coluna "AUTHINFO" para substituir `--user=docker-desktop` no próximo comando.
+
+```bash
+# Definir contexto do kubectl
+kubectl config set-context tech-challenge-grupo19 --cluster=docker-desktop --user=docker-desktop
+
+kubectl config use-context tech-challenge-grupo19
+```
+
+### 4. Provisionar infraestrutura (execução completa)
 
 ```bash
 # Executar todo o processo de uma vez (incluindo init, plan e apply)
 make terraform-run
 ```
 
-### 4. Provisionar infraestrutura (passo a passo) - Opcional
+### 5. Provisionar infraestrutura (passo a passo) - Opcional
 
 ```bash
 # Caso prefira executar comando por comando:
@@ -253,17 +289,14 @@ terraform plan
 terraform apply
 ```
 
-### 5. Verificar recursos criados
+### 6. Verificar recursos criados
 
 ```bash
-# Verificar namespace criado
-kubectl get namespaces
-
 # Verificar todos os recursos
 kubectl get all -n tech-challenge
 ```
 
-### 6. Destruir infraestrutura (quando necessário)
+### 7. Destruir infraestrutura
 
 ```bash
 # Limpa completamente os recursos criados (terraform + docker)
@@ -282,9 +315,18 @@ terraform destroy
 
 A documentação completa da API está disponível através do Swagger UI:
 
-**URL**: `http://localhost:8000/docs` (ambiente local)
+**URL**: `http://localhost:8000/docs` (ambiente local / kubernetes)
 
-**URL**: `http://localhost:30000/docs` (kubernetes local)
+**URL**: `http://localhost:30000/docs` (terraform)
+
+### Endpoints da Fase 2:
+
+- **Aprovar Orçamento**: `PUT /ordens-servico/{id}/aprovar-orcamento`
+- **Recusar Orçamentos**: `PUT /ordens-servico/{id}/recusar-orcamento`
+- **Atualização de Status**: `PUT /ordens-servico/{id}`
+- **Consulta de Status**: `GET /ordens-servico/{id}`
+- **Abertura de OS**: `POST /ordens-servico/`
+- **Listagem de OS**: `GET /ordens-servico/`
 
 ### Autenticação
 

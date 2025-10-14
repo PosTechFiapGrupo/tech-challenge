@@ -21,7 +21,7 @@ provider "docker" {
 
 provider "kubernetes" {
   config_path    = "~/.kube/config"
-  config_context = "docker-desktop"
+  config_context = "tech-challenge-grupo19"
 }
 
 provider "helm" {
