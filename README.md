@@ -193,7 +193,16 @@ kubectl cluster-info
 kubectl config use-context docker-desktop
 ```
 
-### 3. Aplicar configurações manualmente
+### 3. Buildar a aplicação
+```bash
+make build-up
+```
+OU
+
+```bash
+docker-compose up -d --build
+```
+### 4. Aplicar configurações manualmente
 
 ```bash
 # Aplicar todos os manifestos Kubernetes
@@ -206,7 +215,7 @@ kubectl get pods -n tech-challenge
 kubectl get services -n tech-challenge
 ```
 
-### 4. Acessar aplicação
+### 5. Acessar aplicação
 
 ```bash
 # Obter URL do serviço
