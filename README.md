@@ -130,6 +130,50 @@ A pipeline CI/CD utiliza **GitHub Actions** e depende de algumas variáveis de a
 - kubectl (para deploy em Kubernetes)
 - Terraform (para provisionamento de infraestrutura)
 
+## 🛠️ Execução Local
+
+### 1. Clonar o repositório
+
+```bash
+git clone <url-do-repositorio>
+cd tech-challenge
+```
+
+### 2. Configurar ambiente
+
+```bash
+# Renomeie o arquivo "env-example" para ".env"
+cp env-example .env
+```
+
+### 3. Subir a aplicação
+
+```bash
+# Usando Make
+make up
+
+# Ou usando Docker Compose diretamente
+docker-compose up -d
+```
+
+### 4. Aplicar migrations
+
+```bash
+make migrate-up
+```
+
+### 5. Popular banco de dados (opcional)
+
+```bash
+make populate-db
+```
+
+### 6. Acessar a aplicação
+
+- **API**: http://localhost:8000
+- **Documentação (Swagger)**: http://localhost:8000/docs
+- **Redoc**: http://localhost:8000/redoc
+
 ## ☸️ Deploy em Kubernetes
 
 ### 1. Iniciar Minikube
