@@ -25,6 +25,8 @@ help:
 	@echo "  make lint         - Executar linting com flake8"
 	@echo "  make check-all    - Executar formatação, lint e testes"
 	@echo "  make populate-db  - Popular banco de dados com dados fictícios"
+	@echo "  make load-test    - Executar teste de carga no endpoint de orçamento"
+	@echo "  make load-test-custom REQUESTS=200 CONCURRENT=20 - Teste de carga personalizado"
 
 # Iniciar aplicação
 up:
@@ -105,6 +107,22 @@ check-all: format lint test
 # Popular banco de dados com dados fictícios
 populate-db:
 	$(DOCKER_COMPOSE) exec app python populate_db.py
+
+# Executar teste de carga personalizado
+load-test-custom:
+	$(DOCKER_COMPOSE) exec app python load_test_orcamento.py \
+		--requests $(or $(REQUESTS),100) \
+		--concurrent $(or $(CONCURRENT),10) \
+		--delay $(or $(DELAY),0.1) \
+		--output load_test_results.json
+
+# Teste de carga intenso (mais requisições)
+load-test:
+	$(DOCKER_COMPOSE) exec app python load_test_orcamento.py \
+		--requests 10000 \
+		--concurrent 50 \
+		--delay 0.05 \
+		--output load_test_heavy_results.json
 
 # Ver qual comando docker-compose está sendo usado
 print-docker-compose:
