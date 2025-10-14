@@ -90,6 +90,26 @@ Developer → Docker Build → Terraform → Kubernetes → Application
      │            └─ Container Image
      └─ Code Changes
 ```
+## ⚙️ Parâmetros e Segredos da Pipeline CI/CD
+
+A pipeline CI/CD utiliza **GitHub Actions** e depende de algumas variáveis de ambiente e segredos configurados no repositório.
+
+### 🔐 Segredos Obrigatórios (Settings → Secrets → Actions)
+| Nome | Exemplo | Descrição |
+|------|----------|------------|
+| `SECRET_KEY` | `a4f8b9c2d3e4f567890abcdef123456...` | Chave de segurança usada na API |
+| `MYSQL_PASSWORD` | `tech_password` | Senha do banco MySQL |
+| `MYSQL_ROOT_PASSWORD` | `root_password` | Senha root usada nos testes |
+| `GH_TOKEN` *(ou usar `GITHUB_TOKEN`)* | *(automático)* | Token para push da imagem no GHCR |
+
+### 🌍 Variáveis Opcionais (Settings → Variables → Actions)
+| Nome | Exemplo | Descrição |
+|------|----------|------------|
+| `USERNAME_GH` | `Rian292` | Usuário usado no login do GHCR |
+| `MYSQL_USER` | `tech_user` | Usuário do banco |
+| `MYSQL_DATABASE` | `tech_challenge` | Banco de dados padrão |
+| `K8S_NAMESPACE` | `tech-challenge` | Namespace Kubernetes |
+| `K8S_CONTEXT` | `docker-desktop` | Contexto kubectl (opcional) |
 
 ## 🚀 Tecnologias
 
