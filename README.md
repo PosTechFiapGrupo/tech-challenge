@@ -232,11 +232,28 @@ cd tech-challenge
 cp env-example .env
 ```
 
-### 3. Configurar contexto do kubectl
+### 3. Criar o cluster e configurar contexto do kubectl
+
+```bash
+#Escolha uma das opções abaixo para criar o cluster local:
+# Criar o cluster com Kind
+kind create cluster --name docker-desktop
+
+# Criar o cluster com Minikube
+minikube start -p docker-desktop
+
+# Se usar o Docker Desktop, o cluster já estará disponível
+```
+```bash
+# Descubra o nome do seu usuário do cluster
+kubectl config get-contexts
+```
+
+Use o nome do usuário listado na coluna "AUTHINFO" para substituir `--user=docker-desktop` no próximo comando.
 
 ```bash
 # Definir contexto do kubectl
-kubectl config set-context tech-challenge-grupo19 --cluster=tech-challenge-grupo19 --user=tech-challenge-grupo19
+kubectl config set-context tech-challenge-grupo19 --cluster=docker-desktop --user=docker-desktop
 
 kubectl config use-context tech-challenge-grupo19
 ```
@@ -289,9 +306,18 @@ terraform destroy
 
 A documentação completa da API está disponível através do Swagger UI:
 
-**URL**: `http://localhost:8000/docs` (ambiente local)
+**URL**: `http://localhost:8000/docs` (ambiente local / kubernetes)
 
-**URL**: `http://localhost:30000/docs` (kubernetes local)
+**URL**: `http://localhost:30000/docs` (terraform)
+
+### Endpoints da Fase 2:
+
+- **Aprovar Orçamento**: `PUT /ordens-servico/{id}/aprovar-orcamento`
+- **Recusar Orçamentos**: `PUT /ordens-servico/{id}/recusar-orcamento`
+- **Atualização de Status**: `PUT /ordens-servico/{id}`
+- **Consulta de Status**: `GET /ordens-servico/{id}`
+- **Abertura de OS**: `POST /ordens-servico/`
+- **Listagem de OS**: `GET /ordens-servico/`
 
 ### Autenticação
 
