@@ -217,19 +217,20 @@ jobs:
             --from-literal=MIGRATION_DATABASE_URL="mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}" \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Criar namespace (manifesto opcional)
-        run: kubectl apply -f k8s/namespace.yaml || true
+      - name: Criar namespace
+        run: kubectl apply -f k8s/00-namespace.yaml || true
 
-      - name: Criar Secrets e ConfigMap (manifests opcionais)
+      - name: Criar Secrets e ConfigMap
         run: |
-          kubectl -n ${K8S_NAMESPACE} apply -f k8s/configmap.yaml || true
-          kubectl -n ${K8S_NAMESPACE} apply -f k8s/externalsecret.yaml || true
+          kubectl -n ${K8S_NAMESPACE} apply -f k8s/01-configmap.yaml || true
+          kubectl -n ${K8S_NAMESPACE} apply -f k8s/02-externalsecret.yaml || true
 
       - name: Aplicar manifests
         run: |
-          kubectl -n ${K8S_NAMESPACE} apply -f k8s/deployment.yaml
-          kubectl -n ${K8S_NAMESPACE} apply -f k8s/hpa.yaml || true
-          kubectl -n ${K8S_NAMESPACE} apply -f k8s/service.yaml
+          kubectl -n ${K8S_NAMESPACE} apply -f k8s/03-service.yaml
+          kubectl -n ${K8S_NAMESPACE} apply -f k8s/04-deployment.yaml
+          kubectl -n ${K8S_NAMESPACE} apply -f k8s/05-hpa.yaml || true
+          
 
       - name: Aguardar rollout
         run: kubectl -n ${K8S_NAMESPACE} rollout status deployment/${DEPLOYMENT_NAME} --timeout=180s
