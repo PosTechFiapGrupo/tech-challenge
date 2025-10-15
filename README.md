@@ -193,9 +193,10 @@ kubectl cluster-info
 kubectl config use-context docker-desktop
 ```
 
-### 3. Buildar a aplicação
+### 3. Buildar a aplicação e subir a imagem para o minikube
 ```bash
 make build-up
+minikube image load tech-challenge-app:latest
 ```
 OU
 

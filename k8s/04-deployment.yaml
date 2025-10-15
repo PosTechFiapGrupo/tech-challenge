@@ -31,7 +31,8 @@ spec:
 
       containers:
         - name: tech-challenge
-          image: tech-challenge:latest
+          image: tech-challenge-app:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
           envFrom:
