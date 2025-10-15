@@ -231,7 +231,7 @@ kubectl port-forward service/api-service 8000:80 -n tech-challenge
 ### 1. Clonar o repositório
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/PosTechFiapGrupo/tech-challenge
 cd tech-challenge
 ```
 
