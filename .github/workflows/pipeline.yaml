@@ -199,7 +199,7 @@ jobs:
         env:
           CONTAINER_NAME: tech-challenge
         run: |
-          yq -i '(.spec.template.spec.containers[] | select(.name == env(CONTAINER_NAME))).image = env(APP_IMAGE)' k8s/deployment.yaml
+          yq -i '(.spec.template.spec.containers[] | select(.name == env(CONTAINER_NAME))).image = env(APP_IMAGE)' k8s/04-deployment.yaml
 
       - name: Criar Secret no Kubernetes
         env:
