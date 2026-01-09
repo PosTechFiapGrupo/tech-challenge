@@ -32,6 +32,21 @@ services:
     networks:
       - tech-network
 
+  newrelic-infra:
+    image: newrelic/infrastructure:latest
+    container_name: newrelic-infra
+    privileged: true
+    pid: host
+    network_mode: host
+    cap_add:
+      - SYS_PTRACE
+    env_file:
+       - ${ENV_FILE:-.env}
+    volumes:
+      - /:/host:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
 volumes:
   mysql_data:
 

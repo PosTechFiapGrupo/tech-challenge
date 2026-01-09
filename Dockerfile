@@ -40,17 +40,24 @@ COPY --from=builder /wheels /wheels
 # Install dependencies from wheels
 RUN pip install --no-cache /wheels/*
 
+# Install New Relic agent
+RUN pip install --no-cache-dir newrelic
+
 # Copy application code
 COPY --chown=appuser:appuser ./app ./app
 COPY --chown=appuser:appuser alembic.ini .
 COPY --chown=appuser:appuser migrations ./migrations/
 COPY --chown=appuser:appuser populate_db.py .
+COPY --chown=appuser:appuser newrelic.ini .
 
 # Switch to non-root user
 USER appuser
 
+# Set New Relic config file location
+ENV NEW_RELIC_CONFIG_FILE=/app/newrelic.ini
+
 # Expose port
 EXPOSE 8000
 
-# Start the application with gunicorn
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8000", "app.main:application"]
+# Start the application with New Relic wrapper
+CMD ["newrelic-admin", "run-program", "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8000", "app.main:application"]
