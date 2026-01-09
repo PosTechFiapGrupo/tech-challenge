@@ -22,6 +22,7 @@ resource "kubernetes_secret" "app_secret" {
     MYSQL_ROOT_PASSWORD = base64encode("root_password")
     MYSQL_PASSWORD      = base64encode("tech_password")
     MYSQL_USER          = base64encode("tech_user")
+    NEW_RELIC_LICENSE_KEY = base64encode(lookup(local.env_vars, "NEW_RELIC_LICENSE_KEY", ""))
   }
 
   type = "Opaque"
