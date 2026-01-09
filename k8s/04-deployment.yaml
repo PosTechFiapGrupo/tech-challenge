@@ -45,6 +45,25 @@ spec:
               value: /tmp
             - name: GUNICORN_CMD_ARGS
               value: "--worker-tmp-dir /tmp"
+            # New Relic Kubernetes metadata
+            - name: NEW_RELIC_METADATA_KUBERNETES_CLUSTER_NAME
+              value: "tech-challenge-cluster"
+            - name: NEW_RELIC_METADATA_KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NEW_RELIC_METADATA_KUBERNETES_NAMESPACE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NEW_RELIC_METADATA_KUBERNETES_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_NAME
+              value: "tech-challenge"
+            - name: NEW_RELIC_METADATA_KUBERNETES_CONTAINER_IMAGE_NAME
+              value: "tech-challenge-app:latest"
           volumeMounts:
             - name: tmp
               mountPath: /tmp

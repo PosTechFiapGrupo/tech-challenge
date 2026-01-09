@@ -67,6 +67,49 @@ resource "kubernetes_deployment" "app" {
             }
           }
 
+          # New Relic Kubernetes metadata
+          env {
+            name  = "NEW_RELIC_METADATA_KUBERNETES_CLUSTER_NAME"
+            value = "tech-challenge-grupo19"
+          }
+
+          env {
+            name = "NEW_RELIC_METADATA_KUBERNETES_NODE_NAME"
+            value_from {
+              field_ref {
+                field_path = "spec.nodeName"
+              }
+            }
+          }
+
+          env {
+            name = "NEW_RELIC_METADATA_KUBERNETES_NAMESPACE_NAME"
+            value_from {
+              field_ref {
+                field_path = "metadata.namespace"
+              }
+            }
+          }
+
+          env {
+            name = "NEW_RELIC_METADATA_KUBERNETES_POD_NAME"
+            value_from {
+              field_ref {
+                field_path = "metadata.name"
+              }
+            }
+          }
+
+          env {
+            name  = "NEW_RELIC_METADATA_KUBERNETES_CONTAINER_NAME"
+            value = "tech-challenge"
+          }
+
+          env {
+            name  = "NEW_RELIC_METADATA_KUBERNETES_CONTAINER_IMAGE_NAME"
+            value = "tech-challenge-app:latest"
+          }
+
           resources {
             limits = {
               cpu    = "200m"
